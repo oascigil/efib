@@ -22,10 +22,15 @@ DEPLOYMENT_LEGEND = {
    'CACHE_ALL_RSN_ALL':   r'$\left(C_{A}, F_{A}\right)$',
                        }
 STRATEGY_LEGEND = {
-   'LIRA_LCE':    r'$\left(LIRA_{LCE}\right)$',
+   'LIRA_BC':    r'$\left(BC\right)$',
    'LIRA_DFIB':   r'$\left(DFIB\right)$',
                   }
 
+STRATEGY_STYLE = {
+         'LIRA_DFIB':             'b--p',
+         'LIRA_BC':      'c--<',
+         'LIRA_LCE':  'g--*',
+                }
 def plot_deployment_strategies_rsn_freshness(resultset, plotdir, topology, rsn_cache_ratio=1.0):
     """Plot RSN fresheness against deployment strategies
     """
@@ -77,6 +82,47 @@ def plot_deployment_strategies_rsn_freshness(resultset, plotdir, topology, rsn_c
                    % (str(topology), str(rsn_cache_ratio)), plotdir)
 
 
+def plot_latency(resultset, plotdir, topology, rsn_cache_ratio):
+    """Plot forwarding strategy against latency
+    """
+    
+    # Pyplot parameters
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+
+    deployments = ['CACHE_ALL_RSN_ALL']
+    strategies = ['LIRA_BC', 'LIRA_DFIB']
+    desc = {}
+    desc['ylabel'] = 'Latency (ms)'
+    desc['xparam'] = ('strategy', 'name')
+    desc['xvals'] = strategies #deployments
+    desc['xticks'] = [STRATEGY_LEGEND[d] for d in strategies]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'joint_cache_rsn_placement': {'rsn_cache_ratio': rsn_cache_ratio}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ymetrics'] = [('LATENCY', 'MEAN')]
+    desc['ycondnames'] = [('joint_cache_rsn_placement', 'name')]
+    desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] 
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['line_style'] = STRATEGY_STYLE
+    desc['plotempty'] = False
+    #desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
+     #                 (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
+    
+    #desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+     #                 (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
+      #                (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_DFIB'): 'blue',
+       #               (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_DFIB'): 'red'}
+
+    #desc['bar_hatch'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_LCE'): None,
+     #                 (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_LCE'): None,
+      #                (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_DFIB'): '//',
+       #               (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_DFIB'): '//'}
+    plot_bar_chart(resultset, desc, 'LATENCY_T=%s@A=%s.pdf'
+               % (str(topology), str(rsn_cache_ratio)), plotdir)
 def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio):
     """Plot RSN fresheness against deployment strategies
     """
@@ -87,7 +133,7 @@ def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cach
     plt.rcParams['figure.figsize'] = 8, 5
     
     deployments = ['CACHE_ALL_RSN_ALL']
-    strategies = ['LIRA_LCE', 'LIRA_DFIB']
+    strategies = ['LIRA_BC', 'LIRA_DFIB']
     desc = {}
     desc['ylabel'] = 'Cache hit ratio'
     desc['xparam'] = ('strategy', 'name')
@@ -371,6 +417,7 @@ def plot_paper_graphs(resultset, plotdir):
         # plot_deployment_strategies_rsn_freshness(resultset, plotdir, topology, rsn_cache_ratio=16.0)
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
             plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio)
+            plot_latency(resultset, plotdir, topology, rsn_cache_ratio)
         # for strategy in ['LIRA_CHOICE']:
         #    plot_rsn_sizing_graphs(resultset, plotdir, topology, strategy, 'CACHE_HIGH_RSN_ALL')
         #    plot_incremental_deployment_cache_hits(resultset, plotdir, topology, strategy)

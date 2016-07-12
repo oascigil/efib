@@ -86,7 +86,7 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for asn in [3257]:
         #for rsn_cache_ratio in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
-            for strategy in ['LIRA_LCE', 'LIRA_DFIB']:
+            for strategy in ['LIRA_BC', 'LIRA_DFIB']:
                 experiment = copy.deepcopy(base)
                 experiment['topology']['asn'] = asn
                 experiment['strategy']['name'] = strategy

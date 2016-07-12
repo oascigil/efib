@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module contains performance metrics loggers
 """
 from __future__ import division
@@ -293,24 +294,37 @@ class LatencyCollector(DataCollector):
         self.req_latency = 0.0
         self.sess_count = 0
         self.latency = 0.0
+        self.hit_indicator = False
+        self.content_recvd = False # indicator set to True when receiver gets the content
         if cdf:
             self.latency_data = collections.deque()
     
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
+        self.receiver = receiver
         self.sess_count += 1
         self.sess_latency = 0.0
+        self.hit_indicator = False
+        self.content_recvd = False
     
     @inheritdoc(DataCollector)
     def request_hop(self, u, v, main_path=True):
         if main_path:
-            self.sess_latency += self.view.link_delay(u, v)
+            if not self.hit_indicator:
+                self.sess_latency += self.view.link_delay(u, v)
     
+    @inheritdoc(DataCollector)
+    def cache_hit(self, node):
+        self.hit_indicator = True
+
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
         if main_path:
-            self.sess_latency += self.view.link_delay(u, v)
-    
+            if not self.content_recvd:
+                self.sess_latency += self.view.link_delay(u, v)
+        if v is self.receiver:
+            self.content_recvd = True
+
     @inheritdoc(DataCollector)
     def end_session(self, success=True):
         if not success:
@@ -354,6 +368,7 @@ class CacheHitRatioCollector(DataCollector):
         self.sess_count = 0
         self.cache_hits = 0
         self.serv_hits = 0
+        self.hit_indicator = False # To determine a cache hit occured in a session and only count the first one per session
         if off_path_hits:
             self.off_path_hit_count = 0
         if per_node:
@@ -366,6 +381,7 @@ class CacheHitRatioCollector(DataCollector):
 
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
+        self.hit_indicator = False 
         self.sess_count += 1
         if self.off_path_hits:
             source = self.view.content_source(content)
@@ -375,13 +391,16 @@ class CacheHitRatioCollector(DataCollector):
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
-        self.cache_hits += 1
-        if self.off_path_hits and node not in self.curr_path:
-            self.off_path_hit_count += 1
-        if self.cont_hits:
-            self.cont_cache_hits[self.curr_cont] += 1
-        if self.per_node:
-            self.per_node_cache_hits[node] += 1
+        if self.hit_indicator is False:
+            self.hit_indicator = True
+            self.cache_hits += 1
+            if self.off_path_hits and node not in self.curr_path:
+                self.off_path_hit_count += 1
+            if self.cont_hits:
+                self.cont_cache_hits[self.curr_cont] += 1
+            if self.per_node:
+                self.per_node_cache_hits[node] += 1
+
 
     @inheritdoc(DataCollector)
     def server_hit(self, node):
