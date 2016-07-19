@@ -269,8 +269,12 @@ def run_scenario(settings, params, curr_exp, n_exp):
 
         # caching and routing strategy definition
         strategy = tree['strategy']
+        warmup_strategy = tree['warmup_strategy']
         if strategy['name'] not in STRATEGY:
             logger.error('No implementation of strategy %s was found.' % strategy['name'])
+            return None
+        if warmup_strategy['name'] not in STRATEGY:
+            logger.error('No implementation of warm-up strategy %s was found.' % warmup_strategy['name'])
             return None
         
         # cache eviction policy definition
@@ -294,7 +298,7 @@ def run_scenario(settings, params, curr_exp, n_exp):
         collectors = {m: {} for m in metrics}
 
         logger.info('Experiment %d/%d | Start simulation', curr_exp, n_exp)
-        results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors)
+        results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
         
         duration = time.time() - start_time
         logger.info('Experiment %d/%d | End simulation | Duration %s.', 

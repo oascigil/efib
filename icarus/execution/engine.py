@@ -12,7 +12,7 @@ from icarus.registry import DATA_COLLECTOR, STRATEGY
 __all__ = ['exec_experiment']
 
 
-def exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors):
+def exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy):
     """Execute the simulation of a specific scenario.
     
     Parameters
@@ -53,9 +53,18 @@ def exec_experiment(topology, workload, netconf, strategy, cache_policy, collect
     controller.attach_collector(collector)
     
     strategy_name = strategy['name']
+    warmup_strategy_name = warmup_strategy['name']
     strategy_args = {k: v for k, v in strategy.iteritems() if k != 'name'}
+    warmup_strategy_args = {k: v for k, v in warmup_strategy.iteritems() if k != 'name'}
     strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+    warmup_strategy_inst = STRATEGY[warmup_strategy_name](view, controller, **warmup_strategy_args)
     
+    counter = 0
     for time, event in workload:
-        strategy_inst.process_event(time, **event)
+        if counter < workload.n_warmup:
+            counter += 1
+            warmup_strategy_inst.process_event(time, **event)
+        else:
+            strategy_inst.process_event(time, **event)
+
     return collector.results()

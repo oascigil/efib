@@ -102,8 +102,8 @@ class RsnNexthop(object):
         Determines whether the nexthop entry is fresh
         """
         if (time_now - self.time_stamp) > fresh_interval:
-            return True
-        return False
+            return False
+        return True
 
 class RsnEntry(object):
     """An entry in the RSN table retrieved by using a content name as the index"""
@@ -927,7 +927,7 @@ class NearestReplicaRouting(Strategy):
     """
 
     @inheritdoc(Strategy)
-    def __init__(self, view, controller, metacaching, **kwargs):
+    def __init__(self, view, controller, metacaching='LCE', **kwargs): # Onur default value of metacaching set to LCE
         super(NearestReplicaRouting, self).__init__(view, controller)
         if metacaching not in ('LCE', 'LCD'):
             raise ValueError("Metacaching policy %s not supported" % metacaching)
@@ -938,7 +938,7 @@ class NearestReplicaRouting(Strategy):
         # get all required data
         locations = self.view.content_locations(content)
         nearest_replica = min(locations, 
-                              key=lambda s: sum(self.view.shortest_path(receiver, s)))
+                              key=lambda s: len(self.view.shortest_path(receiver, s)))
         # Route request to nearest replica
         self.controller.start_session(time, receiver, content, log)
         self.controller.forward_request_path(receiver, nearest_replica)
@@ -1041,6 +1041,78 @@ class RandomChoice(Strategy):
                 self.controller.put_content(v)
         self.controller.end_session() 
 
+@register_strategy('NDN')
+class Ndn(Strategy):
+    """NDN strategy with shortest path routing and RSN routing up to a
+    certain number of detour trails.
+
+    If a node has got both an RSN and a cache, if the content is caches, put it
+    in the RSN only if evicted
+    """
+
+    def __init__(self, view, controller, p=1.0):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            An instance of the network view
+        controller : NetworkController
+            An instance of the network controller
+        p : float, optional
+            The probability to insert a content in a cache. If 1, the strategy
+            always insert content, like a normal LCE, if less it behaves like
+            a Bernoulli random caching strategy
+        """
+        super(Ndn, self).__init__(view, controller)
+        self.p = p
+    
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+        self.controller.start_session(time, receiver, content, log)
+        # Start point of the request path
+        curr_hop = receiver
+        # Source of content
+        source = self.view.content_source(content)
+        # Node serving the content on-path
+        on_path_serving_node = None
+        # Node serving the content off-path
+
+        path = self.view.shortest_path(curr_hop, source)
+        # Handle request        
+        # Route requests to original source and queries caches on the path
+        for hop in range(1, len(path)):
+            u = path[hop - 1]
+            v = path[hop]
+            self.controller.forward_content_hop(u, v)
+            # Return if there is cache hit at v
+            if self.view.has_cache(v):
+                if self.controller.get_content(v):
+                    serving_node = v
+                    break
+
+        else: # for concluded without break. Get content from source
+            self.controller.get_content(v)
+            serving_node = v
+     
+        # Return content:
+        path = self.view.shortest_path(serving_node, receiver)
+        for hop in range(1, len(path)):
+            u = path[hop - 1]
+            v = path[hop]
+            if self.view.has_cache(v):
+                if self.p == 1.0 or random.random() <= self.p:
+                    self.controller.put_content(v)
+            # Insert/update rsn entry
+            if self.view.has_rsn_table(u):    
+                rsn_entry = self.controller.get_rsn(u)
+                rsn_entry = RsnEntry() if rsn_entry is None else rsn_entry
+                rsn_entry.insert_nexthop(v, v, len(path) - hop, time) 
+                self.controller.put_rsn(u, rsn_entry)
+            self.controller.forward_content_hop(u, v)
+
+        self.controller.end_session()
+
 @register_strategy('LIRA_DFIB')
 class LiraDfib(Strategy):
     """LIRA strategy with shortest path routing and RSN routing up to a
@@ -1050,7 +1122,7 @@ class LiraDfib(Strategy):
     in the RSN only if evicted
     """
 
-    def __init__(self, view, controller, p=1.0, rsn_fresh=50.0, rsn_timeout=200.0, extra_quota=2):
+    def __init__(self, view, controller, p=1.0, rsn_fresh=50.0, rsn_timeout=50000.0, extra_quota=10):
         """Constructor
         
         Parameters
@@ -1108,7 +1180,7 @@ class LiraDfib(Strategy):
             packet_quota += 1
             if packet_quota > quota_limit:
                 break
-            self.controller.forward_request_hop(u, v)
+            # self.controller.forward_request_hop(u, v)
             # Return if there is cache hit at v
             if self.view.has_cache(v):
                 if self.controller.get_content(v):
@@ -1139,7 +1211,7 @@ class LiraDfib(Strategy):
                     trail = [curr_hop]
                 
                     while rsn_hop is not None:
-                        self.controller.forward_request_hop(curr_hop, rsn_hop)
+                        # self.controller.forward_request_hop(curr_hop, rsn_hop)
                         prev_hop = curr_hop
                         curr_hop = rsn_hop
 
@@ -1194,7 +1266,14 @@ class LiraDfib(Strategy):
         # Sort return paths by length
         sorted_paths = sorted(off_path_trails, key=len)
         visited = {} # keep track of the visited nodes to eliminate duplicate data packets arriving at a hop (simulating PIT forwarding)
+        first = False
         for path in sorted_paths:
+            if not first: # only forward the request of the shortest path
+                first = True
+                for hop in range(1, len(path)):
+                    u = path[hop - 1]
+                    v = path[hop]
+                    self.controller.forward_request_hop(u, v)
             path.reverse()
             for hop in range(1, len(path)):
                 curr_hop = path[hop]

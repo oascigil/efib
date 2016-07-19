@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Network Model-View-Controller (MVC)
 """
 import logging
@@ -360,9 +361,11 @@ class NetworkModel(object):
                 if 'rsn_size' in stack_props:
                     self.rsn_size[node] = stack_props['rsn_size']
             elif stack_name == 'source':
-                contents = stack_props['contents']
-                for content in contents:
-                    self.content_source[content] = node
+            # Onur: adding the following check and indent the following 3 lines after if
+                if 'contents' in stack_props:
+                    contents = stack_props['contents']
+                    for content in contents:
+                        self.content_source[content] = node
         if any(c < 1 for c in self.cache_size.values()):
             logger.warn('Some content caches have size equal to 0. '
                           'I am setting them to 1 and run the experiment anyway')

@@ -74,7 +74,7 @@ EXPERIMENT_QUEUE = deque()
 
 # C-FIB size sensitivity
 base = copy.deepcopy(default)
-network_cache = 0.01
+network_cache = 0.95
 base['topology']['name'] = 'ROCKET_FUEL'
 base['topology']['source_ratio'] = 0.1
 base['topology']['ext_delay'] = 34

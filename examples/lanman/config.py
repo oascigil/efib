@@ -36,6 +36,8 @@ N_REPLICATIONS = 1
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
 DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY']
 
+# Strategy that will be executed during warm-up phase
+WARMUP_STRATEGY = 'NDN'
 
 # This is a base experiment configuration with all the parameters that won't
 # change across experiments of the same campaign
@@ -45,18 +47,20 @@ base['desc'] = "Base experiment"    # Description shown during execution
 
 # Default experiment parameters
 CACHE_POLICY = 'LRU'
+# Alpha determines content selection (Zipf parameter)
 ALPHA = 0.8
+# Beta determines the zipf parameter determining how sources are selected
+BETA = 0.9
 # Number of content objects
-N_CONTENTS = 3*10**4
+N_CONTENTS = 10**4
 # Number of content requests generated to prepopulate the caches
 # These requests are not logged
-N_WARMUP = 2*10**4
+N_WARMUP = 36*10**4
 # Number of content requests generated after the warmup and logged
 # to generate results. 
-N_MEASURED = 4*10**4
+N_MEASURED = 36*10**4
 # Number of requests per second (over the whole network)
-REQ_RATE = 10
-
+REQ_RATE = 1000
 
 default = Tree()
 default['workload'] = {
@@ -66,8 +70,9 @@ default['workload'] = {
     'n_warmup':   N_WARMUP,
     'n_measured': N_MEASURED,
     'rate':       REQ_RATE
+    # 'beta':       BETA
                        }
-default['content_placement']['name'] = 'UNIFORM'
+default['content_placement']['name'] = 'LOWEST_DEGREE'
 default['cache_policy']['name'] = CACHE_POLICY
 
 # Instantiate experiment queue
@@ -77,17 +82,20 @@ EXPERIMENT_QUEUE = deque()
 
 base = copy.deepcopy(default)
 # Total size of network cache as a fraction of content population
-network_cache = 0.01
+network_cache = 0.95 # 0.01
 base['topology']['name'] = 'ROCKET_FUEL'
 base['topology']['source_ratio'] = 0.1
-base['topology']['ext_delay'] = 34
+base['topology']['ext_delay'] = 5 # 34
 base['joint_cache_rsn_placement'] = {'network_cache': network_cache}
+base['warmup_strategy']['name'] = WARMUP_STRATEGY
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for asn in [3257]:
         #for rsn_cache_ratio in [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
-            for strategy in ['LIRA_BC', 'LIRA_DFIB']:
+            for strategy in ['LIRA_BC', 'LIRA_DFIB', 'NDN', 'NRR']:
                 experiment = copy.deepcopy(base)
+                if strategy is not 'NRR':
+                    experiment['strategy']['p'] = 0.18
                 experiment['topology']['asn'] = asn
                 experiment['strategy']['name'] = strategy
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Content placement strategies.
 
 This module contains function to decide the allocation of content objects to
@@ -5,12 +6,13 @@ source nodes.
 """
 import random
 import collections
+import networkx as nx
 
 from fnss.util import random_from_pdf
 from icarus.registry import register_content_placement
 
 
-__all__ = ['uniform_content_placement', 'weighted_content_placement']
+__all__ = ['uniform_content_placement', 'weighted_content_placement', 'lowest_degree_content_placement']
 
 
 def apply_content_placement(placement, topology):
@@ -93,5 +95,35 @@ def weighted_content_placement(topology, contents, source_weights, seed=None):
     content_placement = collections.defaultdict(set)
     for c in contents:
         content_placement[random_from_pdf(source_pdf)].add(c)
+    apply_content_placement(content_placement, topology)
+ 
+# Pick 2 nodes with the lowest degree as the content sources 
+@register_content_placement('LOWEST_DEGREE')
+def lowest_degree_content_placement(topology, contents, seed=None):
+    """Places content objects to source nodes with the lowest degree 
+    
+    Parameters
+    ----------
+    topology : Topology
+        The topology object
+   contents : iterable
+        Iterable of content objects
+        
+    Returns
+    -------
+    cache_placement : dict
+        Dictionary mapping content objects to source nodes
+
+    
+    Notes
+    -----
+    A deterministic placement of objects (e.g., for reproducing results) can be
+    achieved by using a fix seed value
+    """
+    # TODO: For now I am adding all the content to 0th node, implement degree-based placement
+    content_placement = collections.defaultdict(set)
+    source_nodes = get_sources(topology)
+    for c in contents:
+        content_placement[source_nodes[0]].add(c)
     apply_content_placement(content_placement, topology)
     

@@ -22,8 +22,11 @@ DEPLOYMENT_LEGEND = {
    'CACHE_ALL_RSN_ALL':   r'$\left(C_{A}, F_{A}\right)$',
                        }
 STRATEGY_LEGEND = {
+   'NDN':        r'$\left(NDN\right)$',
+   'LIRA_LCE':   r'$\left(LIRA\right)$',
    'LIRA_BC':    r'$\left(BC\right)$',
-   'LIRA_DFIB':   r'$\left(DFIB\right)$',
+   'LIRA_DFIB':  r'$\left(DFIB\right)$',
+   'NRR':        r'$\left(NRR\right)$', 
                   }
 
 STRATEGY_STYLE = {
@@ -92,7 +95,7 @@ def plot_latency(resultset, plotdir, topology, rsn_cache_ratio):
     plt.rcParams['figure.figsize'] = 8, 5
 
     deployments = ['CACHE_ALL_RSN_ALL']
-    strategies = ['LIRA_BC', 'LIRA_DFIB']
+    strategies = ['LIRA_BC', 'LIRA_DFIB', 'NDN', 'NRR']
     desc = {}
     desc['ylabel'] = 'Latency (ms)'
     desc['xparam'] = ('strategy', 'name')
@@ -133,7 +136,7 @@ def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cach
     plt.rcParams['figure.figsize'] = 8, 5
     
     deployments = ['CACHE_ALL_RSN_ALL']
-    strategies = ['LIRA_BC', 'LIRA_DFIB']
+    strategies = ['LIRA_BC', 'LIRA_DFIB', 'NDN', 'NRR']
     desc = {}
     desc['ylabel'] = 'Cache hit ratio'
     desc['xparam'] = ('strategy', 'name')
@@ -151,7 +154,7 @@ def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cach
     desc['errorbar'] = True
     desc['legend_loc'] = 'upper right' # 'upper right'
     desc['legend_args'] = {'ncol': 2} 
-    desc['ymax'] = 0.25
+    desc['ymax'] = 0.80
     desc['plotempty'] = True
     desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
                       (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}

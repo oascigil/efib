@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Traffic workloads
 
 Every traffic workload to be used with Icarus must be modelled as an iterable
@@ -41,11 +42,11 @@ class StationaryWorkload(object):
     If a *beta* parameter is specified, then receivers issue requests at
     different rates. The algorithm used to determine the requests rates for 
     each receiver is the following:
-     * All receiver are sorted in decreasing order of degree of the PoP they
+     * All receiver are sorted in decreasing (ONUR: increasing) order of degree of the PoP they
        are attached to. This assumes that all receivers have degree = 1 and are
        attached to a node with degree > 1
      * Rates are then assigned following a Zipf distribution of coefficient
-       beta where nodes with higher-degree PoPs have a higher request rate 
+       beta where nodes with higher-degree (ONUR: lower-degree) PoPs have a higher request rate 
     
     Parameters
     ----------
@@ -90,8 +91,8 @@ class StationaryWorkload(object):
         random.seed(seed)
         self.beta = beta
         if beta != 0:
-            degree = nx.degree(self.topology)
-            self.receivers = sorted(self.receivers, key=lambda x: degree[iter(topology.edge[x]).next()], reverse=True)
+            degree = nx.degree(topology)
+            self.receivers = sorted(self.receivers, key=lambda x: degree[iter(topology.edge[x]).next()], reverse=False)
             self.receiver_dist = TruncatedZipfDist(beta, len(self.receivers))
         
     def __iter__(self):

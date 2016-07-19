@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Implements cache placement strategies
 """
 from __future__ import division
