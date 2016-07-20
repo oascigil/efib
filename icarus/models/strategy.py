@@ -1247,6 +1247,12 @@ class LiraDfib(Strategy):
                         # trail but failed. 
                         # Invalidate the trail here and return to on-path node
                         self.controller.invalidate_trail(trail)
+                        if  fresh_trail:
+                            for hop in range(1, len(trail)):
+                                self.controller.forward_request_hop(trail[hop-1], trail[hop])
+                            trail.reverse()
+                            for hop in range(1, len(trail)):
+                                self.controller.forward_request_hop(trail[hop-1], trail[hop])
                         #TODO if, afer invalidation, there is no nexthop entries
                         # then delete the rsn entry
 
@@ -1278,8 +1284,9 @@ class LiraDfib(Strategy):
             for hop in range(1, len(path)):
                 curr_hop = path[hop]
                 prev_hop = path[hop-1]
-                if visited.get(curr_hop):
+                if visited.get(prev_hop):
                     break
+                visited[prev_hop] = True
                 # Insert/update rsn entry towards the direction of user
                 rsn_entry = self.controller.get_rsn(prev_hop) if self.view.has_rsn_table(prev_hop) else None
                 rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
@@ -1395,6 +1402,10 @@ class LiraBC(Strategy):
                         # trail but failed. 
                         # Invalidate the trail here and return to on-path node
                         self.controller.invalidate_trail(trail)
+                        # travel the reverse path of the trail
+                        trail.reverse()
+                        for hop in range(1, len(trail)):
+                            self.controller.forward_request_hop(trail[hop-1], trail[hop])
                         #TODO if, afer invalidation, there is no nexthop entries
                         # then delete the rsn entry
 
