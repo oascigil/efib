@@ -19,6 +19,7 @@ __all__ = [
     'LatencyCollector',
     'PathStretchCollector',
     'ControlPlaneCollector',
+    'OverheadCollector',
     'TestCollector'
            ]
 
@@ -272,6 +273,37 @@ class LinkLoadCollector(DataCollector):
                      'PER_LINK_INTERNAL': link_loads_int,
                      'PER_LINK_EXTERNAL': link_loads_ext})
 
+@register_data_collector('OVERHEAD')
+class OverheadCollector(DataCollector):
+    """Data collector measuring the overhead, i.e., number of data packets
+    forwarded on all links averaged over the number of sessions.
+    """
+
+    def __init__(self, view):
+        """Constructor
+
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+        self.view = view
+        self.num_data = 0.0
+        self.sess_count = 0
+
+    @inheritdoc(DataCollector)
+    def content_hop(self, u, v, main_path=True):
+        self.num_data += 1
+
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        self.sess_count += 1
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        results = Tree({'MEAN': self.num_data/self.sess_count})
+        
+        return results
 
 @register_data_collector('LATENCY')
 class LatencyCollector(DataCollector):

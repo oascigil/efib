@@ -34,7 +34,7 @@ N_REPLICATIONS = 1
 
 # List of metrics to be measured in the experiments
 # The implementation of data collectors are located in ./icaurs/execution/collectors.py
-DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY']
+DATA_COLLECTORS = ['CACHE_HIT_RATIO', 'LATENCY', 'OVERHEAD']
 
 # Strategy that will be executed during warm-up phase
 WARMUP_STRATEGY = 'NDN'
