@@ -105,6 +105,9 @@ class RsnNexthop(object):
             return False
         return True
 
+def get_timestamp(rsn_nexthop_obj):
+    return rsn_nexthop_obj.time_stamp
+
 class RsnEntry(object):
     """An entry in the RSN table retrieved by using a content name as the index"""
     # self.expiration_interval = 0
@@ -226,6 +229,28 @@ class RsnEntry(object):
 
         return freshest
     
+    def get_topk_freshest_except_node(self, time, node, k):
+        """ 
+        Parameters
+        ----------
+        time : current time
+        node : nexthop node that is not considered when finding the freshest entry
+        k : max. number of nexthops returned
+
+        Returns 
+        -------
+        list of k most freshest nexthops : freshest (i.e., with min age) entry that is not stale and whose node attr is not equal to node
+        """
+        
+        self.nexthops = [x for x in self.nexthops if not x.is_expired(time, self.expiration_interval)]
+        # Sort the list of nexthops by their age
+        self.nexthops.sort(key=get_timestamp, reverse=True)
+        nexthop_obj = self.nexthops[0] if len(self.nexthops) > 0 else None
+        if nexthop_obj is not None and nexthop_obj.is_fresh(time, self.fresh_interval):
+            return [nexthop_obj]
+        else:
+            return self.nexthops[0:k]
+
     def get_freshest_except_nodes(self, time, nodes):
         """ 
         Parameters
@@ -1122,7 +1147,7 @@ class LiraDfib(Strategy):
     in the RSN only if evicted
     """
 
-    def __init__(self, view, controller, p=1.0, rsn_fresh=50.0, rsn_timeout=50000.0, extra_quota=10):
+    def __init__(self, view, controller, p=1.0, rsn_fresh=3.0, rsn_timeout=30, extra_quota=3, fan_out = 2, onpath_hint=False):
         """Constructor
         
         Parameters
@@ -1145,6 +1170,8 @@ class LiraDfib(Strategy):
         self.rsn_fresh = rsn_fresh
         self.rsn_timeout = rsn_timeout
         self.extra_quota = extra_quota
+        self.fan_out = fan_out
+        self.onpath_hint = onpath_hint
     
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
@@ -1190,69 +1217,69 @@ class LiraDfib(Strategy):
             off_path_serving_node = None
             if packet_quota <= quota_limit and rsn_entry is not None and v is not source:
                 next_hop = path[hop + 1]
-                rsn_nexthop_obj = rsn_entry.get_freshest_except_node(time, u)
-                
+                rsn_nexthop_objs = rsn_entry.get_topk_freshest_except_node(time, u, self.fan_out)
                 # if the rsn entry's nexthops are  expired, remove
                 if not len(rsn_entry.nexthops):
                     self.controller.remove_rsn(v)
-                rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
-                if rsn_hop is not None and rsn_hop == next_hop:
-                   # we just found an "on-path" hint: continue with the FIB nexthop
-                    continue 
-                # TODO: Check if distance to off-path cache is closer than source
+                for rsn_nexthop_obj in rsn_nexthop_objs:
+                    rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
+                    if rsn_hop is not None and rsn_hop == next_hop:
+                        # we just found an "on-path" hint: continue with the FIB nexthop
+                        continue 
+                    # TODO: Check if distance to off-path cache is closer than source
                 
-                elif rsn_hop is not None and packet_quota < quota_limit: 
+                    elif rsn_hop is not None and packet_quota < quota_limit: 
                     # If entry in RSN table, then start detouring to get cached
                     # content, if any
-                    packet_quota += 1
-                    fresh_trail = True if rsn_nexthop_obj.is_fresh(time, self.rsn_fresh) else False
-                    prev_hop = u
-                    curr_hop = v
-                    trail = [curr_hop]
+                        packet_quota += 1
+                        fresh_trail = True if rsn_nexthop_obj.is_fresh(time, self.rsn_fresh) else False
+                        prev_hop = u
+                        curr_hop = v
+                        trail = [curr_hop]
                 
-                    while rsn_hop is not None:
+                        while rsn_hop is not None:
                         # self.controller.forward_request_hop(curr_hop, rsn_hop)
-                        prev_hop = curr_hop
-                        curr_hop = rsn_hop
+                            prev_hop = curr_hop
+                            curr_hop = rsn_hop
 
-                        if rsn_hop in trail:
+                            if rsn_hop in trail:
                             # loop in the explored off-path trail
-                            break
+                                break
 
-                        else:
-                            trail.append(curr_hop)
-                            if curr_hop == source or self.view.has_cache(curr_hop):
-                                if self.controller.get_content(curr_hop):
-                                    trail = on_path_trail[:-1] + trail
-                                    off_path_trails.append(trail)
-                                    off_path_serving_node = curr_hop
-                                    break
-
-                            rsn_entry = self.controller.get_rsn(curr_hop) if self.view.has_rsn_table(curr_hop) else None
-
-                            if rsn_entry is not None:
-                                rsn_nexthop_obj = rsn_entry.get_freshest_except_node(time, prev_hop)
-                                rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
-
-                                if not len(rsn_entry.nexthops):
-                                    # if the rsn entry's nexthops are  expired, remove
-                                    self.controller.remove_rsn(curr_hop)
-                                    
                             else:
-                                rsn_hop = None
+                                trail.append(curr_hop)
+                                if curr_hop == source or self.view.has_cache(curr_hop):
+                                    if self.controller.get_content(curr_hop):
+                                        trail = on_path_trail[:-1] + trail
+                                        off_path_trails.append(trail)
+                                        off_path_serving_node = curr_hop
+                                        break
 
-                    else: # else of while
+                                rsn_entry = self.controller.get_rsn(curr_hop) if self.view.has_rsn_table(curr_hop) else None
+
+                                if rsn_entry is not None:
+                                    rsn_nexthop_obj = rsn_entry.get_freshest_except_node(time, prev_hop)
+                                    rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
+
+                                    if not len(rsn_entry.nexthops):
+                                    # if the rsn entry's nexthops are  expired, remove
+                                        self.controller.remove_rsn(curr_hop)
+                                    
+                                else:
+                                    rsn_hop = None
+
+                        else: # else of while
                         # Onur: if break is executed above, this else is skipped
                         # This point is reached when I did explore an RSN
                         # trail but failed. 
                         # Invalidate the trail here and return to on-path node
-                        self.controller.invalidate_trail(trail)
-                        if  fresh_trail:
-                            for hop in range(1, len(trail)):
-                                self.controller.forward_request_hop(trail[hop-1], trail[hop])
-                            trail.reverse()
-                            for hop in range(1, len(trail)):
-                                self.controller.forward_request_hop(trail[hop-1], trail[hop])
+                            self.controller.invalidate_trail(trail)
+                            if  fresh_trail:
+                                for hop in range(1, len(trail)):
+                                    self.controller.forward_request_hop(trail[hop-1], trail[hop])
+                                trail.reverse()
+                                for hop in range(1, len(trail)):
+                                    self.controller.forward_request_hop(trail[hop-1], trail[hop])
                         #TODO if, afer invalidation, there is no nexthop entries
                         # then delete the rsn entry
 
