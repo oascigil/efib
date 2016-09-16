@@ -152,8 +152,209 @@ def plot_latency(resultset, plotdir, topology, rsn_cache_ratio):
        #               (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_DFIB'): '//'}
     plot_bar_chart(resultset, desc, 'LATENCY_T=%s@A=%s.pdf'
                % (str(topology), str(rsn_cache_ratio)), plotdir)
+
+def plot_cachehitsVStimeout(resultset, plotdir, topology, timeouts):
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Expiration'
+    desc['xparam'] = ('strategy', 'rsn_timeout')
+    desc['xvals'] = timeouts #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in timeouts]
+    desc['placement'] = [2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}}
+
+    desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+                             ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*[('joint_cache_rsn_placement', 'name')]
+    desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] + ['CACHE_ALL_RSN_ALL']
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    # desc['ymax'] = 0.80
+    desc['plotempty'] = True
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
+    plot_bar_chart(resultset, desc, 'cache-hits-%s-time-out.pdf'
+                   % (str(topology)), plotdir)
+
+
+def plot_satrateVSextraquota(resultset, plotdir, topology, caching_probabilities, quota):
+    """Plot sat. rate against extra quota and caching probability (only applicable to DFIB method)
+    """
+    
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['xlabel'] = 'Probability of caching'
+    desc['ylabel'] = 'Request satisfaction rate'
+    desc['xparam'] = ('strategy', 'p')
+    desc['xvals'] = caching_probabilities #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in caching_probabilities]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    desc['ymetrics'] = [('SAT_RATE', 'MEAN')]
+    #desc['ycondnames'] = [('joint_cache_rsn_placement', 'name')]
+    #desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] 
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['plotempty'] = False
+    plot_bar_chart(resultset, desc, 'SatisfactionRate-%s-extra-quota-%s.pdf'
+               % (str(topology), str(quota)), plotdir)
+
+
+def plot_overheadVSextraquota(resultset, plotdir, topology, caching_probabilities, quota):
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    desc = {}
+    desc['ylabel'] = 'Overhead'
+    desc['xlabel'] = 'Probability of caching'
+    desc['xparam'] = ('strategy', 'p')
+    desc['xvals'] = caching_probabilities #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in caching_probabilities]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ymetrics'] = [('OVERHEAD', 'MEAN')]
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['plotempty'] = False
+    plot_bar_chart(resultset, desc, 'Overhead-%s-extra-quota-%s.pdf'
+                   % (str(topology), str(quota)), plotdir)
+
+def plot_cachehitsVSextraquota(resultset, plotdir, topology, caching_probabilities, quota):
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Probability of caching'
+    desc['xparam'] = ('strategy', 'p')
+    desc['xvals'] = caching_probabilities #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in caching_probabilities]
+    desc['placement'] = [2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+                             ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*[('joint_cache_rsn_placement', 'name')]
+    desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] + ['CACHE_ALL_RSN_ALL']
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    # desc['ymax'] = 0.80
+    desc['plotempty'] = True
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
+    plot_bar_chart(resultset, desc, 'cache-hits-%s-extra-quota-%s.pdf'
+                   % (str(topology), str(quota)), plotdir)
+
+
+def plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
+    
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xparam'] = ('strategy', 'rsn_fresh')
+    desc['xvals'] = fresh_intervals #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in fresh_intervals]
+    desc['placement'] = [2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+                             ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*[('joint_cache_rsn_placement', 'name')]
+    desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] + ['CACHE_ALL_RSN_ALL']
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    # desc['ymax'] = 0.80
+    desc['plotempty'] = True
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
+    plot_bar_chart(resultset, desc, 'cache-hits-%s-extra-quota-%s.pdf'
+                   % (str(topology), str(quota)), plotdir)
+
+def plot_satrateVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
+    """Plot RSN freshness threshold against satisfaction rate (only applicable to DFIB method)
+    """
+    
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['xlabel'] = 'Freshness threshold'
+    desc['ylabel'] = 'Sat. Rate '
+    desc['xparam'] = ('strategy', 'rsn_fresh')
+    desc['xvals'] = fresh_intervals #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in fresh_intervals]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    desc['ymetrics'] = [('SAT_RATE', 'MEAN')]
+    #desc['ycondnames'] = [('joint_cache_rsn_placement', 'name')]
+    #desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] 
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['plotempty'] = False
+    plot_bar_chart(resultset, desc, 'SAT_RATE_T=%s@A=%s.pdf'
+               % (str(topology), str(quota)), plotdir)
+
+
+def  plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
+    """PLOT RSN freshness threshold against cache hits
+    """
+
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    
+    desc = {}
+    desc['xlabel'] = 'Freshness threshold'
+    desc['ylabel'] = 'Latency (ms)'
+    desc['xparam'] = ('strategy', 'rsn_fresh')
+    desc['xvals'] = fresh_intervals #strategies #deployments
+    desc['xticks'] = [r"%s" % r for r in fresh_intervals]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
+                      'strategy': {'extra_quota': quota}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ymetrics'] = [('LATENCY', 'MEAN')]
+    #desc['ycondnames'] = [('joint_cache_rsn_placement', 'name')]
+    #desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] 
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['plotempty'] = False
+    plot_bar_chart(resultset, desc, 'LATENCY_T=%s@A=%s.pdf'
+               % (str(topology), str(quota)), plotdir)
+
+
 def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio):
-    """Plot RSN fresheness against deployment strategies
+    """Plot RSN size against deployment strategies
     """
     
     # Pyplot parameters
@@ -350,8 +551,7 @@ def plot_incremental_deployment_cache_hits_off_path(resultset, plotdir, topology
     plot_lines(resultset, desc, filename, plotdir)
 
 
-
-def plot_rsn_sizing_graphs(resultset, plotdir, topology, strategy, deployment):
+def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment):
     """Plot cache hit ratio vs RSN hit ratio"""
     # Name mappings for file names
     s_name = {'LIRA_LCE': 'lce', 'LIRA_CHOICE': 'choice'}
@@ -359,31 +559,41 @@ def plot_rsn_sizing_graphs(resultset, plotdir, topology, strategy, deployment):
     plt.rcParams['text.usetex'] = True
     plt.rcParams['font.size'] = 18
     plt.rcParams['figure.figsize'] = 8, 6
-    rsn_cache_ratios = [0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0]
+    rsn_cache_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
     desc = {}
     desc['ylabel'] = 'Cache hit ratio'
     desc['xlabel'] = 'C-FIB/cache size ratio'
     desc['xparam'] = ('joint_cache_rsn_placement', 'rsn_cache_ratio')
     desc['xvals'] = rsn_cache_ratios
     desc['xticks'] = [r"%s" % r for r in rsn_cache_ratios]
-    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
-                      'joint_cache_rsn_placement':{'name': deployment},
-                      'strategy': {'name': strategy}}
+
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}}
+    # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
+    #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
     desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
-                        ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+                             ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*[('joint_cache_rsn_placement', 'name')]
+    desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] + ['CACHE_ALL_RSN_ALL']
     desc['errorbar'] = True
-    desc['group_width'] = 0.2
-    desc['legend_loc'] = 'lower right'
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    desc['ymax'] = 0.80
     desc['plotempty'] = True
-    desc['placement'] = 'stacked'
-    desc['legend'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): 'On path',
-                      ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'Off path'}
-    desc['bar_color'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): '#00006B',
-                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'red'}
-    desc['ymax'] = 0.16
-    desc['bar_hatch'] = None
-    plot_bar_chart(resultset, desc, 'hits-chra-%s-%s-%s.pdf'
-                   % (str(topology), s_name[strategy], deployment), plotdir)
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+                      (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
+      #                (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_DFIB'): 'blue',
+       #               (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_DFIB'): 'red'}
+
+    #desc['bar_hatch'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_LCE'): None,
+     #                 (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_LCE'): None,
+      #                (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'LIRA_DFIB'): '//',
+       #               (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'LIRA_DFIB'): '//'}
+    plot_bar_chart(resultset, desc, 'rsnsizing-cache-hits-%s-rsn-ratio.pdf'
+                   % (str(topology)), plotdir)
+
 
 
 def plot_multicast(resultset, plotdir):
@@ -441,31 +651,48 @@ def renormalize_rsn_freshness(resultset):
 
 
 def plot_paper_graphs(resultset, plotdir):
-    for topology in [3257]:
-        # plot_deployment_strategies_rsn_freshness(resultset, plotdir, topology, rsn_cache_ratio=16.0)
-        for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0]:
-            plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio)
-            plot_latency(resultset, plotdir, topology, rsn_cache_ratio)
-            plot_overhead(resultset, plotdir, topology, rsn_cache_ratio)
-        # for strategy in ['LIRA_CHOICE']:
-        #    plot_rsn_sizing_graphs(resultset, plotdir, topology, strategy, 'CACHE_HIGH_RSN_ALL')
-        #    plot_incremental_deployment_cache_hits(resultset, plotdir, topology, strategy)
-    # Not included in the paper        
-    #plot_multicast(resultset, plotdir)
-    
-#     for topology in [1221, 1239, 1755, 3257, 3967,  6461]:
-#         for rsn_cache_ratio in [1.0, 2.0, 4.0, 8.0, 16.0]:
-#             plot_deployment_strategies_rsn_freshness(resultset, plotdir, topology, rsn_cache_ratio)
-#             plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio)
-#         for deployment in ['CACHE_HIGH_RSN_HIGH', 'CACHE_HIGH_RSN_ALL', 'CACHE_ALL_RSN_HIGH', 'CACHE_ALL_RSN_ALL']:
-#             plot_rsn_sizing_graphs(resultset, plotdir, topology, 'LIRA_LCE', deployment)
-#             plot_rsn_sizing_graphs(resultset, plotdir, topology, 'LIRA_CHOICE', deployment)
-#         plot_deployment_strategies_cache_hits_ccn_comparison(resultset, plotdir, topology, 'CACHE_ALL_RSN_HIGH')
-#         renormalize_rsn_freshness(resultset)
-#         for strategy in ('LIRA_LCE', 'LIRA_CHOICE'):
-#             plot_incremental_deployment_freshness(resultset, plotdir, topology, strategy)
-#             plot_incremental_deployment_cache_hits(resultset, plotdir, topology, strategy)
-#             plot_incremental_deployment_cache_hits_off_path(resultset, plotdir, topology, strategy)
+
+    topology = 3967
+    strategy = 'LIRA_DFIB'
+    deployment = 'CACHE_ALL_RSN_ALL'
+    plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment)
+    #plot_rsn_sizing_overhead(resultset, plotdir, topology, rsn_cache_ratio)
+    #plot_rsn_sizing_latency(resultset, plotdir, topology, rsn_cache_ratio)
+
+
+""" Comparison of different strategies
+    topology = 3967
+    for rsn_cache_ratio in [64.0]:
+        plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio)
+        plot_overhead(resultset, plotdir, topology, rsn_cache_ratio)
+        plot_latency(resultset, plotdir, topology, rsn_cache_ratio)
+"""
+"""
+    caching_probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    for topology in [3967]:
+        for extra_quota in [-2, -1, 0, 1, 2, 3, 4]:
+            plot_cachehitsVSextraquota(resultset, plotdir, topology, caching_probabilities, extra_quota)
+            plot_overheadVSextraquota(resultset, plotdir, topology, caching_probabilities, extra_quota)
+            plot_satrateVSextraquota(resultset, plotdir, topology, caching_probabilities, extra_quota)
+"""
+            
+"""
+    timeouts = [0.1, 0.5, 1.0, 4.0, 10.0, 40.0, 300.0, 100000.0]
+    for topology in [3967]:
+        plot_cachehitsVStimeout(resultset, plotdir, topology, timeouts)
+"""
+
+"""
+    fresh_intervals = [4.0]
+    for topology in [3967]:
+        for extra_quota in [-2, -1, 0, 1, 2, 3]:
+            plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
+            plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
+            plot_satrateVSfreshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
+            # plot_overhead_freshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
+"""
+
+
 
 
 

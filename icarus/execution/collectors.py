@@ -273,6 +273,48 @@ class LinkLoadCollector(DataCollector):
                      'PER_LINK_INTERNAL': link_loads_int,
                      'PER_LINK_EXTERNAL': link_loads_ext})
 
+@register_data_collector('SAT_RATE')
+class SatisfactionRateCollector(DataCollector):
+    """Data collector measuring the sat. rate, i.e., the ratio of requests 
+    that fetch content.
+
+    """
+    def __init__(self, view):
+        """Constructor
+
+        Parameters
+        ----------
+        view : NetworkView
+            The network view instance
+        """
+        self.view = view
+        self.sess_count = 0
+        self.hits = 0.0
+        self.hit_indicator = False #To determine a cache/server hot occured in a session to only count the first occurence
+    
+    @inheritdoc(DataCollector)
+    def start_session(self, timestamp, receiver, content):
+        self.hit_indicator = False 
+        self.sess_count += 1
+    
+    @inheritdoc(DataCollector)
+    def cache_hit(self, node):
+        if self.hit_indicator is False:
+            self.hit_indicator = True
+            self.hits += 1
+
+    @inheritdoc(DataCollector)
+    def server_hit(self, node):
+        if self.hit_indicator is False:
+            self.hit_indicator = True
+            self.hits += 1
+    
+    @inheritdoc(DataCollector)
+    def results(self):
+        results = Tree({'MEAN': self.hits/self.sess_count})
+
+        return results
+
 @register_data_collector('OVERHEAD')
 class OverheadCollector(DataCollector):
     """Data collector measuring the overhead, i.e., number of data packets
@@ -379,7 +421,7 @@ class CacheHitRatioCollector(DataCollector):
     requests served by a cache.
     """
     
-    def __init__(self, view, off_path_hits=True, per_node=True, content_hits=False):
+    def __init__(self, view, off_path_hits=True, per_node=False, content_hits=False):
         """Constructor
         
         Parameters
@@ -400,7 +442,7 @@ class CacheHitRatioCollector(DataCollector):
         self.sess_count = 0
         self.cache_hits = 0
         self.serv_hits = 0
-        self.hit_indicator = False # To determine a cache hit occured in a session and only count the first one per session
+        self.hit_indicator = False # To determine a cache hit occured in a session to only count the first occurence
         if off_path_hits:
             self.off_path_hit_count = 0
         if per_node:
@@ -445,7 +487,7 @@ class CacheHitRatioCollector(DataCollector):
     @inheritdoc(DataCollector)
     def results(self):
         n_sess = self.cache_hits + self.serv_hits
-        hit_ratio = self.cache_hits/n_sess
+        hit_ratio = self.cache_hits/self.sess_count 
         results = Tree(**{'MEAN': hit_ratio})
         if self.off_path_hits:
             results['MEAN_OFF_PATH'] = self.off_path_hit_count/n_sess
