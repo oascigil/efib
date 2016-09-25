@@ -553,12 +553,10 @@ def plot_incremental_deployment_cache_hits_off_path(resultset, plotdir, topology
 
 def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment):
     """Plot cache hit ratio vs RSN hit ratio"""
-    # Name mappings for file names
-    s_name = {'LIRA_LCE': 'lce', 'LIRA_CHOICE': 'choice'}
     # Plot attributes
-    plt.rcParams['text.usetex'] = True
+    plt.rcParams['text.usetex'] = False
     plt.rcParams['font.size'] = 18
-    plt.rcParams['figure.figsize'] = 8, 6
+    plt.rcParams['figure.figsize'] = 8, 5
     rsn_cache_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
     desc = {}
     desc['ylabel'] = 'Cache hit ratio'
@@ -566,7 +564,7 @@ def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment
     desc['xparam'] = ('joint_cache_rsn_placement', 'rsn_cache_ratio')
     desc['xvals'] = rsn_cache_ratios
     desc['xticks'] = [r"%s" % r for r in rsn_cache_ratios]
-
+    desc['placement'] = [2]
     desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}}
     # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
     #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]

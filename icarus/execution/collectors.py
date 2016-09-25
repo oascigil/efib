@@ -289,8 +289,10 @@ class SatisfactionRateCollector(DataCollector):
         """
         self.view = view
         self.sess_count = 0
-        self.hits = 0.0
-        self.hit_indicator = False #To determine a cache/server hot occured in a session to only count the first occurence
+        self.num_sat_req = 0.0
+        self.server_hits = 0.0
+        self.cache_hits = 0.0
+        self.hit_indicator = False # a cache/server hit occured in a session to only count the first occurence
     
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
@@ -301,17 +303,22 @@ class SatisfactionRateCollector(DataCollector):
     def cache_hit(self, node):
         if self.hit_indicator is False:
             self.hit_indicator = True
-            self.hits += 1
+            self.num_sat_req += 1
+            self.cache_hits += 1
 
     @inheritdoc(DataCollector)
     def server_hit(self, node):
         if self.hit_indicator is False:
             self.hit_indicator = True
-            self.hits += 1
+            self.num_sat_req += 1
+            self.server_hits += 1
     
     @inheritdoc(DataCollector)
     def results(self):
-        results = Tree({'MEAN': self.hits/self.sess_count})
+        sat_rate = self.num_sat_req/self.sess_count
+        results = Tree(**{'MEAN': sat_rate})
+        results['MEAN_SERVER_HIT'] = self.server_hits/self.sess_count 
+        results['MEAN_CACHE_HIT'] = self.cache_hits/self.sess_count
 
         return results
 
@@ -368,6 +375,7 @@ class LatencyCollector(DataCollector):
         self.req_latency = 0.0
         self.sess_count = 0
         self.latency = 0.0
+        self.server_latency = 100 # Additional max. latency (penalty) for retrieving content from server 
         self.hit_indicator = False
         self.content_recvd = False # indicator set to True when receiver gets the content
         if cdf:
@@ -380,6 +388,7 @@ class LatencyCollector(DataCollector):
         self.sess_latency = 0.0
         self.hit_indicator = False
         self.content_recvd = False
+        self.source = self.view.content_source(content)
     
     @inheritdoc(DataCollector)
     def request_hop(self, u, v, main_path=True):
@@ -393,8 +402,10 @@ class LatencyCollector(DataCollector):
 
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
-        if main_path:
-            if not self.content_recvd:
+        if not self.content_recvd:
+            if u is self.source:
+                self.sess_latency += random.random()*self.server_latency
+            else:
                 self.sess_latency += self.view.link_delay(u, v)
         if v is self.receiver:
             self.content_recvd = True
