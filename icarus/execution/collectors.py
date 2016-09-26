@@ -3,6 +3,7 @@
 """
 from __future__ import division
 import collections
+import random
 
 from icarus.registry import register_data_collector
 from icarus.tools import cdf
