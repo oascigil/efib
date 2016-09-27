@@ -650,13 +650,14 @@ def renormalize_rsn_freshness(resultset):
 
 def plot_paper_graphs(resultset, plotdir):
 
+"""
     topology = 3967
     strategy = 'LIRA_DFIB'
     deployment = 'CACHE_ALL_RSN_ALL'
     plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment)
     #plot_rsn_sizing_overhead(resultset, plotdir, topology, rsn_cache_ratio)
     #plot_rsn_sizing_latency(resultset, plotdir, topology, rsn_cache_ratio)
-
+"""
 
 """ Comparison of different strategies
     topology = 3967

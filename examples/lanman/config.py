@@ -93,7 +93,7 @@ base['joint_cache_rsn_placement'] = {'network_cache': network_cache}
 base['warmup_strategy']['name'] = WARMUP_STRATEGY
 base['warmup_strategy']['p'] = CACHING_PROBABILITY
 
-
+"""
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for asn in [3967]:
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]:
@@ -111,7 +111,7 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
                 experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = rsn_cache_ratio
                 experiment['desc'] = "RSN size sensitivity -> RSN/cache ratio: %s" % str(rsn_cache_ratio)
                 EXPERIMENT_QUEUE.append(experiment)
-
+"""
 
 """
 latencyVSfreshness & cachehitsVSfreshness, etc.
@@ -134,21 +134,23 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
 """
 
 """
-for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
-        for extra_quota in [-2, -1, 0, 1, 2, 3, 4]:
-            experiment = copy.deepcopy(base)
-            experiment['topology']['asn'] = 3967
-            experiment['strategy']['name'] = 'LIRA_DFIB'
-            experiment['strategy']['p'] = caching_probability 
-            experiment['strategy']['rsn_fresh'] = 3.0
-            experiment['strategy']['extra_quota'] = extra_quota
-            experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-            experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-            experiment['desc'] = "caching probability: %s" % str(caching_probability)
-            EXPERIMENT_QUEUE.append(experiment)
+1. Extra Quota with Probability
 """
+for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
+    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:    
+        for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
+            for extra_quota in [0, 1, 2, 3, 4, 5]:
+                experiment = copy.deepcopy(base)
+                experiment['topology']['asn'] = 3967 #3257 #3967
+                experiment['strategy']['name'] = strategy
+                experiment['strategy']['rsn_fresh'] = 3.0
+                experiment['strategy']['p'] = caching_probability 
+                experiment['strategy']['extra_quota'] = extra_quota
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
+                experiment['desc'] = "caching probability: %s" % str(caching_probability)
+                EXPERIMENT_QUEUE.append(experiment)
 
 """
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
