@@ -551,6 +551,98 @@ def plot_incremental_deployment_cache_hits_off_path(resultset, plotdir, topology
     plot_lines(resultset, desc, filename, plotdir)
 
 
+
+def plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quotas):
+    # Plot cache-hit (on-, off-path) for different extra-quota, probability pairs
+    # Plot attributes
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Extra Quota, Probability'
+    desc['xparam'] = ('strategy', 'extra_quota')
+    desc['xvals'] = probabilities
+    desc['xticks'] = [r"%s" % r for r in probabilities]
+    desc['placement'] = len(extra_quotas)*[2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}, 
+                      'strategy': {'name': strategy}}
+    # ymetrics, ycondnames and ycondvals must have the same length
+    desc['ymetrics'] = len(extra_quotas)*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*len(extra_quotas)*[('strategy','extra_quota')]
+    desc['ycondvals'] = [extra_quotas[i//2] for i in range(len(extra_quotas)*2)]
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    #desc['legend_args'] = {'ncol': 2} 
+    desc['ymax'] = 0.80
+
+    """
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 0.0): 'On-path, Extra quota 0',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 0.0): 'Off-path, Extra quota 0 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 1.0): 'On-path, Extra quota 1',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 1.0): 'Off-path, Extra quota 1 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 2.0): 'On-path, Extra quota 2',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 2.0): 'Off-path, Extra quota 2 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 3.0): 'On-path, Extra quota 3',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 3.0): 'Off-path, Extra quota 3 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 4.0): 'On-path, Extra quota 4',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 4.0): 'Off-path, Extra quota 4 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 5.0): 'On-path, Extra quota 5',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 5.0): 'Off-path, Extra quota 5 '}
+    """
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 0.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 0.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 1.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 1.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 2.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 2.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 3.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 3.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 4.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 4.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 5.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 5.0): 'red'}
+    
+    
+    plot_bar_chart(resultset, desc, '%s-first-experiments-chr-%s.pdf'
+                   % (str(topology), str(strategy)), plotdir)
+
+"""
+def plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota):
+    #Plot cache-hit (on-, off-path) for different extra-quota, probability pairs
+    # Plot attributes
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Probability'
+    desc['xparam'] = ('strategy', 'p')
+    desc['xvals'] = probabilities
+    desc['xticks'] = [r"%s" % r for r in probabilities]
+    desc['placement'] = [2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}, 
+                      'strategy': {'name': strategy}, 
+                      'strategy': {'extra_quota': extra_quota}}
+    # ymetrics, ycondnames and ycondvals must have the same length
+    desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    #desc['ycondnames'] = 2*len(extra_quotas)*[('strategy','extra_quota')]
+    #desc['ycondvals'] = [extra_quotas[i//2] for i in range(len(extra_quotas)*2)]
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    desc['ymax'] = 0.80
+    desc['legend'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): 'On-path',
+                      ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'Off-path'}
+    
+    desc['bar_color'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): 'blue',
+                      ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'red'}
+    plot_bar_chart(resultset, desc, '%s-first-experiments-chr-%s-%s.pdf'
+                   % (str(topology), str(strategy), str(extra_quota)), plotdir)
+
+"""
+
 def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment):
     """Plot cache hit ratio vs RSN hit ratio"""
     # Plot attributes
@@ -650,6 +742,20 @@ def renormalize_rsn_freshness(resultset):
 
 def plot_paper_graphs(resultset, plotdir):
 
+    topology = 3967
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    extra_quotas = [0, 1, 2, 3, 4, 5]
+    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:
+        plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quotas)
+
+"""
+    topology = 3967
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    extra_quotas = [0, 1, 2, 3, 4, 5]
+    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:
+        for extra_quota in extra_quotas:
+            plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota)
+"""
 """
     topology = 3967
     strategy = 'LIRA_DFIB'
@@ -666,6 +772,7 @@ def plot_paper_graphs(resultset, plotdir):
         plot_overhead(resultset, plotdir, topology, rsn_cache_ratio)
         plot_latency(resultset, plotdir, topology, rsn_cache_ratio)
 """
+
 """
     caching_probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
     for topology in [3967]:
@@ -690,10 +797,6 @@ def plot_paper_graphs(resultset, plotdir):
             plot_satrateVSfreshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
             # plot_overhead_freshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
 """
-
-
-
-
 
 def run(resultsfile, plotdir):
     """Run the plot script

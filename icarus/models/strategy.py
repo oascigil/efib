@@ -1146,7 +1146,7 @@ class Ndn(Strategy):
 
 
 @register_strategy('LIRA_BC_HYBRID')
-class LiraDfib(Strategy):
+class LiraBcHybrid(Strategy):
     """DFIB strategy mixed with BC routing.
 
        rsn_fresh is a threshold used to identify fresh rsn nexthop entry. When such a fresh entry is found, the algorithm switches to Breadcrumb and 
@@ -1171,7 +1171,7 @@ class LiraDfib(Strategy):
         rsn_on_evict : bool, optional
             If True content evicted from cache are inserted in the RSN
         """
-        super(LiraDfib, self).__init__(view, controller)
+        super(LiraBcHybrid, self).__init__(view, controller)
         self.p = p
         self.rsn_fresh = rsn_fresh
         self.rsn_timeout = rsn_timeout

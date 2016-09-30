@@ -141,7 +141,7 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
         for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
             for extra_quota in [0, 1, 2, 3, 4, 5]:
                 experiment = copy.deepcopy(base)
-                experiment['topology']['asn'] = 3967 #3257 #3967
+                experiment['topology']['asn'] = 3257 #3967
                 experiment['strategy']['name'] = strategy
                 experiment['strategy']['rsn_fresh'] = 3.0
                 experiment['strategy']['p'] = caching_probability 
