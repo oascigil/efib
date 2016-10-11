@@ -17,7 +17,7 @@ PARALLEL_EXECUTION = True
 
 # Number of processes used to run simulations in parallel.
 # This option is ignored if PARALLEL_EXECUTION = False
-N_PROCESSES = cpu_count()
+N_PROCESSES = cpu_count()/4
 
 # Granularity of caching.
 # Currently, only OBJECT is supported
@@ -137,13 +137,13 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
 1. Extra Quota with Probability
 """
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:    
+    for strategy in ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']:    
         for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
             for extra_quota in [0, 1, 2, 3, 4, 5]:
                 experiment = copy.deepcopy(base)
                 experiment['topology']['asn'] = 3257 #3967
                 experiment['strategy']['name'] = strategy
-                experiment['strategy']['rsn_fresh'] = 3.0
+                experiment['strategy']['rsn_fresh'] = 5.0
                 experiment['strategy']['p'] = caching_probability 
                 experiment['strategy']['extra_quota'] = extra_quota
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
