@@ -1227,7 +1227,7 @@ def plot_third_experiments(resultset, plotdir):
     plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals) 
 
 
-def print_fourth_experiments(lst):
+def print_fourth_experiment_data(lst):
     topology = 3257
     rsn_timeouts = [5.0, 10.0, 30.0, 60.0, 120.0, 240.0, 360.0, 600.0, 1200.0, 3600.0, 7200.0]
     strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
@@ -1320,11 +1320,11 @@ def run(resultsfile, plotdir):
         print 'RESULTS:\n'
         printTree(l[1])
 
-    print_first_experiments_data(lst)
+    print_first_experiment_data(lst)
     #print_strategies_experiments_gnuplot(lst)
     #print_second_experiment_data(lst)
     #plot_third_experiments(resultset, plotdir)
-    #print_fourth_experiments(lst)
+    #print_fourth_experiment_data(lst)
         
     # Create dir if not existsing
     if not os.path.exists(plotdir):

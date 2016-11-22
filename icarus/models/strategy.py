@@ -1392,7 +1392,7 @@ class LiraBcHybrid(Strategy):
                 off_path_serving_node = None
                 off_path_fresh_trail = False
                 next_hop = path[hop + 1]
-                rsn_nexthop_objs = rsn_entry.get_topk_freshest_except_node(time, u, self.fan_out)
+                rsn_nexthop_objs = rsn_entry.get_best_k_entry(time, u, self.fan_out)
                 # if the rsn entry's nexthops are  expired, remove
                 if not len(rsn_entry.nexthops):
                     self.controller.remove_rsn(v)
@@ -1405,7 +1405,7 @@ class LiraBcHybrid(Strategy):
                     # If entry in RSN table, then start detouring to get cached
                     # content, if any
                         packet_quota += 1
-                        fresh_trail = True if rsn_nexthop_obj.is_fresh(time, self.rsn_fresh) else False
+                        fresh_trail = True if rsn_nexthop_obj.is_used_and_fresh(time, self.rsn_fresh) else False
                         prev_hop = u
                         curr_hop = v
                         off_path_serving_node = self.follow_offpath_trail(prev_hop, curr_hop, rsn_hop, fresh_trail, on_path_trail, off_path_trails, source, time)
@@ -1650,30 +1650,21 @@ class LiraDfibOph(Strategy):
             path.reverse()
             if path[0] is source:
             # Content coming from the server (i.e., source)
-                content_placed = False
                 for hop in range(1, len(path)):
                     curr_hop = path[hop]
                     prev_hop = path[hop-1]
                     if visited.get(prev_hop):
                         break
                     visited[prev_hop] = True
-                    if not content_placed:
-                        # Insert/update rsn entry towards the direction of user
-                        rsn_entry = self.controller.get_rsn(prev_hop) if self.view.has_rsn_table(prev_hop) else None
-                        rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
-                        rsn_entry.insert_nexthop(curr_hop, curr_hop, len(path) - hop, time) 
-                        self.controller.put_rsn(prev_hop, rsn_entry)
-                    else:
-                        # Insert/Update the rsn entry towards the direction of cache if such an entry existed (in the case of off-path hit)
-                        rsn_entry = self.controller.get_rsn(curr_hop) if self.view.has_rsn_table(curr_hop) else None
-                        rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
-                        rsn_entry.insert_nexthop(prev_hop, prev_hop, len(path) - hop, time)
-                        self.controller.put_rsn(curr_hop, rsn_entry)
+                    # Insert/update rsn entry towards the direction of user
+                    rsn_entry = self.controller.get_rsn(prev_hop) if self.view.has_rsn_table(prev_hop) else None
+                    rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
+                    rsn_entry.insert_nexthop(curr_hop, curr_hop, len(path) - hop, time) 
+                    self.controller.put_rsn(prev_hop, rsn_entry)
                     # Insert content to cache
                     if self.view.has_cache(curr_hop):
                         if self.p == 1.0 or random.random() <= self.p:
-                            self.controller.put_content(curr_hop)
-                            # content_placed = True
+                            self.controller.put_content(prev_hop)
                     # Forward the content
                     self.controller.forward_content_hop(prev_hop, curr_hop)
             else:
@@ -1863,6 +1854,7 @@ class LiraDfib(Strategy):
                     rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
                     if rsn_hop is not None and rsn_hop == next_hop:
                         continue 
+                    # TODO: Check if distance to off-path cache is closer than source
                 
                     elif rsn_hop is not None and packet_quota < quota_limit: 
                     # If entry in RSN table, then start detouring to get cached

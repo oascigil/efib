@@ -17,7 +17,11 @@ PARALLEL_EXECUTION = True
 
 # Number of processes used to run simulations in parallel.
 # This option is ignored if PARALLEL_EXECUTION = False
+<<<<<<< HEAD
 N_PROCESSES = cpu_count()/2
+=======
+N_PROCESSES = cpu_count()/3
+>>>>>>> 9d1b28c19024c911c75035ed4cd92b81287eac92
 
 # Granularity of caching.
 # Currently, only OBJECT is supported
@@ -141,6 +145,7 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for strategy in ['LIRA_BC_HYBRID', 'LIRA_DFIB', 'LIRA_DFIB_OPH']:    
     #for strategy in ['LIRA_DFIB_OPH']:    
+    for strategy in ['LIRA_BC_HYBRID', 'LIRA_DFIB', 'LIRA_DFIB_OPH']:
         for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
             for extra_quota in [2, 3, 4, 5]:
                 experiment = copy.deepcopy(base)
@@ -154,6 +159,7 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
                 experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
                 experiment['desc'] = "caching probability: %s" % str(caching_probability)
                 EXPERIMENT_QUEUE.append(experiment)
+
 
 """
 # experiments comparing different stragies 

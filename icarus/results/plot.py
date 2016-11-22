@@ -334,6 +334,7 @@ def plot_bar_chart(resultset, desc, filename, plotdir):
     ycondvals = desc['ycondvals'] if 'ycondvals' in desc else None
     if ycondnames is not None and ycondvals is not None:
         if not len(ymetrics) == len(ycondnames) == len(ycondvals):
+            print 'len(ymetrics) is ' + repr(len(ymetrics)) + ' len(ycondnames) is ' + repr(len(ycondnames)) + ' len(ycondvals) is ' + repr(len(ycondvals))
             raise ValueError('ymetrics, ycondnames and ycondvals must have the same length')
         # yvals is basically the list of values that differentiate each bar
         # it is used for legends and styles mainly
