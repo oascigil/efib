@@ -5,6 +5,8 @@ from __future__ import division
 import os
 import argparse
 
+import sys #Onur
+
 import matplotlib.pyplot as plt
 
 from icarus.registry import RESULTS_READER
@@ -266,20 +268,21 @@ def plot_cachehitsVSextraquota(resultset, plotdir, topology, caching_probabiliti
                    % (str(topology), str(quota)), plotdir)
 
 
-def plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
+def plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals):
     
     plt.rcParams['text.usetex'] = False
-    plt.rcParams['font.size'] = 18
+    plt.rcParams['font.size'] = 12
     plt.rcParams['figure.figsize'] = 8, 5
     
     desc = {}
+    desc['xlabel'] = 'Freshness threshold'
     desc['ylabel'] = 'Cache hit ratio'
     desc['xparam'] = ('strategy', 'rsn_fresh')
     desc['xvals'] = fresh_intervals #strategies #deployments
     desc['xticks'] = [r"%s" % r for r in fresh_intervals]
     desc['placement'] = [2]
     desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
-                      'strategy': {'extra_quota': quota}}
+                      'strategy': {'name': 'LIRA_BC_HYBRID'} }
     # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
     #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
     desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
@@ -287,17 +290,17 @@ def plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals, quo
     desc['ycondnames'] = 2*[('joint_cache_rsn_placement', 'name')]
     desc['ycondvals'] = ['CACHE_ALL_RSN_ALL'] + ['CACHE_ALL_RSN_ALL']
     desc['errorbar'] = True
-    desc['legend_loc'] = 'upper right' # 'upper right'
+    desc['legend_loc'] = 'lower right' # 'upper right'
     desc['legend_args'] = {'ncol': 2} 
-    # desc['ymax'] = 0.80
+    desc['ymax'] = 0.60
     desc['plotempty'] = True
     desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'On-path',
                       (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'Off-path'}
     
-    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'blue',
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 'CACHE_ALL_RSN_ALL'): 'black',
                       (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 'CACHE_ALL_RSN_ALL'): 'red'}
-    plot_bar_chart(resultset, desc, 'cache-hits-%s-extra-quota-%s.pdf'
-                   % (str(topology), str(quota)), plotdir)
+    plot_bar_chart(resultset, desc, '3_cachehits-freshness-%s.pdf'
+                   % (str(topology)), plotdir)
 
 def plot_satrateVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
     """Plot RSN freshness threshold against satisfaction rate (only applicable to DFIB method)
@@ -325,12 +328,12 @@ def plot_satrateVSfreshness(resultset, plotdir, topology, fresh_intervals, quota
                % (str(topology), str(quota)), plotdir)
 
 
-def  plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals, quota):
+def  plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals):
     """PLOT RSN freshness threshold against cache hits
     """
 
     plt.rcParams['text.usetex'] = False
-    plt.rcParams['font.size'] = 18
+    plt.rcParams['font.size'] = 12
     plt.rcParams['figure.figsize'] = 8, 5
     
     desc = {}
@@ -340,7 +343,7 @@ def  plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals, quot
     desc['xvals'] = fresh_intervals #strategies #deployments
     desc['xticks'] = [r"%s" % r for r in fresh_intervals]
     desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology},
-                      'strategy': {'extra_quota': quota}}
+                      'strategy': {'name':  'LIRA_BC_HYBRID'}}
     # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
     #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
     desc['ymetrics'] = [('LATENCY', 'MEAN')]
@@ -349,8 +352,9 @@ def  plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals, quot
     desc['errorbar'] = True
     desc['legend_loc'] = 'upper right' # 'upper right'
     desc['plotempty'] = False
-    plot_bar_chart(resultset, desc, 'LATENCY_T=%s@A=%s.pdf'
-               % (str(topology), str(quota)), plotdir)
+    desc['bar_color'] = {('LATENCY', 'MEAN') : 'red'}
+    plot_bar_chart(resultset, desc, '3_latency-%s.pdf'
+               % (str(topology)), plotdir)
 
 
 def plot_deployment_strategies_cache_hits(resultset, plotdir, topology, rsn_cache_ratio):
@@ -551,20 +555,109 @@ def plot_incremental_deployment_cache_hits_off_path(resultset, plotdir, topology
     plot_lines(resultset, desc, filename, plotdir)
 
 
-def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategy, deployment):
+"""
+def plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quotas):
+    # Plot cache-hit (on-, off-path) for different extra-quota, probability pairs
+    # Plot attributes
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Extra Quota, Probability'
+    desc['xparam'] = ('strategy', 'extra_quota')
+    desc['xvals'] = probabilities
+    desc['xticks'] = [r"%s" % r for r in probabilities]
+    desc['placement'] = len(extra_quotas)*[2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}, 
+                      'strategy': {'name': strategy}}
+    # ymetrics, ycondnames and ycondvals must have the same length
+    desc['ymetrics'] = len(extra_quotas)*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    desc['ycondnames'] = 2*len(extra_quotas)*[('strategy','extra_quota')]
+    desc['ycondvals'] = [extra_quotas[i//2] for i in range(len(extra_quotas)*2)]
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'upper right' # 'upper right'
+    #desc['legend_args'] = {'ncol': 2} 
+    desc['ymax'] = 0.80
+
+    desc['legend'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 0.0): 'On-path, Extra quota 0',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 0.0): 'Off-path, Extra quota 0 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 1.0): 'On-path, Extra quota 1',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 1.0): 'Off-path, Extra quota 1 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 2.0): 'On-path, Extra quota 2',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 2.0): 'Off-path, Extra quota 2 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 3.0): 'On-path, Extra quota 3',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 3.0): 'Off-path, Extra quota 3 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 4.0): 'On-path, Extra quota 4',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 4.0): 'Off-path, Extra quota 4 ',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 5.0): 'On-path, Extra quota 5',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 5.0): 'Off-path, Extra quota 5 '}
+    
+    desc['bar_color'] = {(('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 0.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 0.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 1.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 1.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 2.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 2.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 3.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 3.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 4.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 4.0): 'red',
+    (('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), 5.0): 'blue',
+                     (('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'), 5.0): 'red'}
+    
+    
+    plot_bar_chart(resultset, desc, '%s-first-experiments-chr-%s.pdf'
+                   % (str(topology), str(strategy)), plotdir)
+
+"""
+
+def plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota):
+    #Plot cache-hit (on-, off-path) for different extra-quota, probability pairs
+    # Plot attributes
+    plt.rcParams['text.usetex'] = False
+    plt.rcParams['font.size'] = 18
+    plt.rcParams['figure.figsize'] = 8, 5
+    desc = {}
+    desc['ylabel'] = 'Cache hit ratio'
+    desc['xlabel'] = 'Probability'
+    desc['xparam'] = ('strategy', 'p')
+    desc['xvals'] = probabilities
+    desc['xticks'] = [r"%s" % r for r in probabilities]
+    desc['placement'] = [2]
+    desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}, 
+                      'strategy': {'name': strategy}, 
+                      'strategy': {'extra_quota': extra_quota}}
+    # ymetrics, ycondnames and ycondvals must have the same length
+    desc['ymetrics'] = [('CACHE_HIT_RATIO', 'MEAN_ON_PATH'), ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
+    #desc['ycondnames'] = 2*len(extra_quotas)*[('strategy','extra_quota')]
+    #desc['ycondvals'] = [extra_quotas[i//2] for i in range(len(extra_quotas)*2)]
+    desc['errorbar'] = True
+    desc['legend_loc'] = 'lower right' # 'upper right'
+    desc['legend_args'] = {'ncol': 2} 
+    desc['ymax'] = 0.80
+    desc['legend'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): 'On-path',
+                      ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'Off-path'}
+    
+    desc['bar_color'] = {('CACHE_HIT_RATIO', 'MEAN_ON_PATH'): 'blue',
+                      ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH'): 'red'}
+    plot_bar_chart(resultset, desc, '%s-first-experiments-chr-%s-%s.pdf'
+                   % (str(topology), str(strategy), str(extra_quota)), plotdir)
+
+
+def plot_rsn_sizing_cachehits(resultset, plotdir, topology, strategies, rsn_cache_ratios):
     """Plot cache hit ratio vs RSN hit ratio"""
     # Plot attributes
     plt.rcParams['text.usetex'] = False
     plt.rcParams['font.size'] = 18
     plt.rcParams['figure.figsize'] = 8, 5
-    rsn_cache_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
     desc = {}
     desc['ylabel'] = 'Cache hit ratio'
     desc['xlabel'] = 'C-FIB/cache size ratio'
     desc['xparam'] = ('joint_cache_rsn_placement', 'rsn_cache_ratio')
     desc['xvals'] = rsn_cache_ratios
     desc['xticks'] = [r"%s" % r for r in rsn_cache_ratios]
-    desc['placement'] = [2]
+    desc['placement'] = [len(strategies)]*len(rsn_cache_ratios)
     desc['filter'] = {'topology': {'name': 'ROCKET_FUEL', 'asn': topology}}
     # desc['ymetrics'] = 2*[('CACHE_HIT_RATIO', 'MEAN_ON_PATH'),
     #                         ('CACHE_HIT_RATIO', 'MEAN_OFF_PATH')]
@@ -649,6 +742,23 @@ def renormalize_rsn_freshness(resultset):
 
 
 def plot_paper_graphs(resultset, plotdir):
+    
+    """
+    topology = 3967
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    extra_quotas = [0, 1, 2, 3, 4, 5]
+    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:
+        plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quotas)
+
+    """
+
+    topology = 3257 #3967
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    extra_quotas = [3] #[0, 1, 2, 3, 4, 5]
+    for strategy in ['LIRA_DFIB']:
+        for extra_quota in extra_quotas:
+            plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota)
+
 
 """
     topology = 3967
@@ -666,6 +776,7 @@ def plot_paper_graphs(resultset, plotdir):
         plot_overhead(resultset, plotdir, topology, rsn_cache_ratio)
         plot_latency(resultset, plotdir, topology, rsn_cache_ratio)
 """
+
 """
     caching_probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
     for topology in [3967]:
@@ -691,9 +802,502 @@ def plot_paper_graphs(resultset, plotdir):
             # plot_overhead_freshness(resultset, plotdir, topology, fresh_intervals, extra_quota)
 """
 
+def searchDictMultipleCat(lst, category_list, attr_value_pairs, num_pairs, collector, subtype):
+    """
+    Search the resultset list for a particular [category, attribute, value] parameter such as ['strategy', 'extra_quota', 3]. attr_value_pairs include the key-value pairs.
+    and once such a key is found, extract the result for a collector, subtype such as ['CACHE_HIT_RATIO', 'MEAN']
+
+    Returns the result if found in the dictionary lst; otherwise returns None
+
+    """
+    result = None
+    for l in lst:
+        num_match = 0
+        for key, val in l[0].items():
+            #print key + '-and-' + category + '-\n'
+            if key in category_list:
+                if (isinstance(val, dict)):
+                    for key1, val1 in val.items():
+                        for key2, val2 in attr_value_pairs.items():
+                            if key1 == key2 and val1 == val2:
+                                num_match = num_match + 1
+                    if num_match == num_pairs:
+                        result = l[1]
+                        break
+                else:
+                    print 'Something is wrong with the search for attr-value pairs\n'
+                    return None
+        if result is not None:
+            break
+    
+    if result is None:
+        print 'Error searched attribute, value pairs:\n' 
+        for k, v in attr_value_pairs.items():
+            print '[ ' + repr(k) + ' , ' + repr(v) + ' ]  '
+        print 'is not found, returning none\n'
+        return None
+    
+    found = None
+    for key, val in result.items():
+        if key == collector:
+            for key1, val1 in val.items():
+                if key1 == subtype:
+                    found = val1
+                    break
+            if found is not None:
+                break
+
+    if found is None:
+        print 'Error searched collector, subtype ' + repr(collector) + ',' + repr(subtype) + 'is not found\n'
+
+    return found
+
+def searchDict(lst, category, attr_value_pairs, num_pairs, collector, subtype):
+    """
+    Search the resultset list for a particular [category, attribute, value] parameter such as ['strategy', 'extra_quota', 3]. attr_value_pairs include the key-value pairs.
+    and once such a key is found, extract the result for a collector, subtype such as ['CACHE_HIT_RATIO', 'MEAN']
+
+    Returns the result if found in the dictionary lst; otherwise returns None
+
+    """
+    result = None
+    for l in lst:
+        for key, val in l[0].items():
+            #print key + '-and-' + category + '-\n'
+            if key == category:
+                if (isinstance(val, dict)):
+                    num_match = 0
+                    for key1, val1 in val.items():
+                        for key2, val2 in attr_value_pairs.items():
+                            if key1 == key2 and val1 == val2:
+                                num_match = num_match + 1
+                    if num_match == num_pairs:
+                        result = l[1]
+                        break
+                else:
+                    print 'Something is wrong with the search for attr-value pairs\n'
+                    return None
+        if result is not None:
+            break
+    
+    if result is None:
+        print 'Error searched attribute, value pairs:\n' 
+        for k, v in attr_value_pairs.items():
+            print '[ ' + repr(k) + ' , ' + repr(v) + ' ]  '
+        print 'is not found, returning none\n'
+        return None
+    
+    found = None
+    for key, val in result.items():
+        if key == collector:
+            for key1, val1 in val.items():
+                if key1 == subtype:
+                    found = val1
+                    break
+            if found is not None:
+                break
+
+    if found is None:
+        print 'Error searched collector, subtype ' + repr(collector) + ',' + repr(subtype) + 'is not found\n'
+
+    return found
+
+def printTree(tree, d = 0):
+    if (tree == None or len(tree) == 0):
+        print "\t" * d, "-"
+    else:
+        for key, val in tree.items():
+            if (isinstance(val, dict)):
+                print "\t" * d, key
+                printTree(val, d+1)
+            else:
+                print "\t" * d, key, str(val)
+
+def print_strategies_experiments_gnuplot(lst):
+    """
+    Write cache hits (off- and on-path) for different strategies for various probabilities
+    to a file in gnuplot format
+
+    """
+
+    strategies = ['NDN', 'NRR_PROB', 'LIRA_BC']
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+
+    filename = 'strategies_cachehits.dat'
+    f = open(filename, 'w')
+
+    f.write('# Cachehit for strategies: NDN, NRR_PROB, and BC\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + 'Off' + '\t')
+        f.write(strategy + 'On' + '\t')
+
+    f.write('\n')   
+
+    for probability in probabilities:
+        f.write(repr(probability) + '\t')
+        for strategy in strategies:
+            off = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+            on = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+            if on is not None and off is not None:
+                f.write(repr(off) + '\t')
+                f.write(repr(on) + '\t')
+        f.write('\n')   
+    f.close()                   
+ 
+    # Write Satisfaction rates
+    filename = 'strategies_satrate.dat'
+    f = open(filename, 'w')
+    f.write('# Satisfaction rate for strategies: NDN, NRR_PROB, and BC\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+
+    for probability in probabilities:
+        f.write(repr(probability) + '\t')
+        for strategy in strategies:
+            satrate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN')
+            if satrate is not None:
+                f.write(repr(satrate) + '\t')
+        f.write('\n')   
+    f.close()                 
+
+    # Write Latencies
+    filename = 'strategies_latency.dat'
+    f = open(filename, 'w')
+    f.write('# Average latency for strategies: NDN, NRR_PROB, and BC\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+
+    for probability in probabilities:
+        f.write(repr(probability) + '\t')
+        for strategy in strategies:
+            ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'LATENCY', 'MEAN')
+            if ltncy is not None:
+                f.write(repr(ltncy) + '\t')
+        f.write('\n')   
+    f.close()                   
+    
+    # Write Overhead
+    filename = 'strategies_overhead.dat'
+    f = open(filename, 'w')
+    f.write('# Average latency for strategies: NDN, NRR_PROB, and BC\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+
+    for probability in probabilities:
+        f.write(repr(probability) + '\t')
+        for strategy in strategies:
+            overhead = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'MEAN')
+            if overhead is not None:
+                f.write(repr(overhead) + '\t')
+        f.write('\n')   
+    f.close()                   
+
+def print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write overhead results for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = strategy + '_satrate.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                satrate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN')
+                if satrate is not None:
+                    f.write(repr(satrate) + '\t')
+            f.write('\n')   
+        f.close()                   
+
+def print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write overhead results for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = strategy + '_overhead.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average overhead for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                overhead = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'MEAN')
+                if overhead is not None:
+                    f.write(repr(overhead) + '\t')
+            f.write('\n')   
+        f.close()                   
+    
+
+def print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write latency results for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = strategy + '_latency.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average latency for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'LATENCY', 'MEAN')
+                if ltncy is not None:
+                    f.write(repr(ltncy) + '\t')
+            f.write('\n')   
+        f.close()                   
+    
+def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write cache hits (off- and on-path) for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = strategy + '_cachehits.dat'
+        f = open(filename, 'w')
+
+        f.write('# Cachehit for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + 'Offpath' + '\t')
+            f.write(repr(extra_quota) + 'Onpath' + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                off = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+                on = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+                if on is not None and off is not None:
+                    f.write(repr(off) + '\t')
+                    f.write(repr(on) + '\t')
+            f.write('\n')   
+        f.close()                   
+
+def print_first_experiment_data(lst):
+    """
+    Print Gnuplot data for the first experiments: impact of caching probaility and extra quota on the cache hits, latency, overhead, sat. rate using different strategies.
+
+    """
+    strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    extra_quotas = [0, 1, 2, 3, 4, 5]
+    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+
+    # print cachehit results for each strategy 
+    print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+    print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+    print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+    print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+
+def print_second_experiment_data(lst):
+    """
+    Print Gnuplot data for the second experiments: impact of DFIB size on cache hits on different strategies
+    """
+    
+    strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    rsn_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
+
+    filename = '2_cachehits.dat'
+    f = open(filename, 'w')
+
+    f.write('# Cachehit for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + 'Off' + '\t')
+        f.write(strategy + 'On' + '\t')
+
+    f.write('\n')   
+
+    for rsn_ratio in rsn_ratios:
+        f.write(repr(rsn_ratio) + '\t')
+        for strategy in strategies:
+            off = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+            on = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+            if on is not None and off is not None:
+                f.write(repr(off) + '\t')
+                f.write(repr(on) + '\t')
+        f.write('\n')   
+    f.close()
+
+    # Write Latencies
+    filename = '2_latency.dat'
+    f = open(filename, 'w')
+
+    f.write('# Average latency for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+    for rsn_ratio in rsn_ratios:
+        f.write(repr(rsn_ratio) + '\t')
+        for strategy in strategies:
+            ltncy = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'LATENCY', 'MEAN')
+            if ltncy is not None:
+                f.write(repr(ltncy) + '\t')
+        f.write('\n')   
+    f.close()
+
+    # Write Overhead
+
+    filename = '2_overhead.dat'
+    f = open(filename, 'w')
+
+    f.write('# Average overhead for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+    for rsn_ratio in rsn_ratios:
+        f.write(repr(rsn_ratio) + '\t')
+        for strategy in strategies:
+            overhead = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'MEAN')
+            if overhead is not None:
+                f.write(repr(overhead) + '\t')
+        f.write('\n')   
+    f.close()
+
+def plot_third_experiments(resultset, plotdir):
+    topology = 3257
+    fresh_intervals = [10.0, 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 600.0, 1200.0]
+    plot_cachehitsVSfreshness(resultset, plotdir, topology, fresh_intervals)
+    plot_latencyVSfreshness(resultset, plotdir, topology, fresh_intervals) 
 
 
+def print_fourth_experiments(lst):
+    topology = 3257
+    rsn_timeouts = [5.0, 10.0, 30.0, 60.0, 120.0, 240.0, 360.0, 600.0, 1200.0, 3600.0, 7200.0]
+    strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    
+    filename = '4_cachehits.dat'
+    f = open(filename, 'w')
 
+    f.write('# Cachehit for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + 'Off' + '\t')
+        f.write(strategy + 'On' + '\t')
+
+    f.write('\n')   
+
+    for rsn_timeout in rsn_timeouts:
+        f.write(repr(rsn_timeout) + '\t')
+        for strategy in strategies:
+            off = searchDict(lst, 'strategy', {'name' : strategy, 'rsn_timeout' : rsn_timeout}, 2, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+            on = searchDict(lst, 'strategy', {'name' : strategy, 'rsn_timeout' : rsn_timeout}, 2, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+            if on is not None and off is not None:
+                f.write(repr(off) + '\t')
+                f.write(repr(on) + '\t')
+        f.write('\n')   
+    f.close()
+
+    # Write Latencies
+    filename = '4_latency.dat'
+    f = open(filename, 'w')
+
+    f.write('# Average latency for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+    for rsn_timeout in rsn_timeouts:
+        f.write(repr(rsn_timeout) + '\t')
+        for strategy in strategies:
+            ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'rsn_timeout' : rsn_timeout}, 2, 'LATENCY', 'MEAN')
+            if ltncy is not None:
+                f.write(repr(ltncy) + '\t')
+        f.write('\n')   
+    f.close()
+
+    # Write Overhead
+
+    filename = '4_overhead.dat'
+    f = open(filename, 'w')
+
+    f.write('# Average overhead for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('#\n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+    for rsn_timeout in rsn_timeouts:
+        f.write(repr(rsn_timeout) + '\t')
+        for strategy in strategies:
+            overhead = searchDict(lst, 'strategy', {'name' : strategy, 'rsn_timeout' : rsn_timeout}, 2, 'OVERHEAD', 'MEAN')
+            if overhead is not None:
+                f.write(repr(overhead) + '\t')
+        f.write('\n')   
+    f.close()
 
 def run(resultsfile, plotdir):
     """Run the plot script
@@ -708,13 +1312,27 @@ def run(resultsfile, plotdir):
         The directory into which graphs will be saved
     """
     resultset = RESULTS_READER['PICKLE'](resultsfile)
+    #Onur: added this BEGIN
+    lst = resultset.dump()
+    for l in lst:
+        print 'PARAMETERS:\n'    
+        printTree(l[0])
+        print 'RESULTS:\n'
+        printTree(l[1])
+
+    print_first_experiments_data(lst)
+    #print_strategies_experiments_gnuplot(lst)
+    #print_second_experiment_data(lst)
+    #plot_third_experiments(resultset, plotdir)
+    #print_fourth_experiments(lst)
+        
     # Create dir if not existsing
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
     # Plot graphs
     print('Plotting results')
-    plot_paper_graphs(resultset, plotdir)
-    print('Exit. Plots were saved in directory %s' % os.path.abspath(plotdir))
+    # plot_paper_graphs(resultset, plotdir)
+    #print('Exit. Plots were saved in directory %s' % os.path.abspath(plotdir))
 
 def main():
     parser = argparse.ArgumentParser(__doc__)

@@ -17,7 +17,7 @@ PARALLEL_EXECUTION = True
 
 # Number of processes used to run simulations in parallel.
 # This option is ignored if PARALLEL_EXECUTION = False
-N_PROCESSES = cpu_count()
+N_PROCESSES = cpu_count()/2
 
 # Granularity of caching.
 # Currently, only OBJECT is supported
@@ -94,38 +94,39 @@ base['warmup_strategy']['name'] = WARMUP_STRATEGY
 base['warmup_strategy']['p'] = CACHING_PROBABILITY
 
 """
+2. SIT/DFIB size
+"""
+"""
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for asn in [3967]:
+    for asn in [3257]:
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]:
-            #for strategy in ['LIRA_BC', 'LIRA_DFIB', 'NDN', 'NRR']:
-            for strategy in ['LIRA_DFIB']:
+            for strategy in ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']:
                 experiment = copy.deepcopy(base)
                 experiment['topology']['asn'] = asn
                 experiment['strategy']['name'] = strategy
-                if strategy is 'LIRA_DFIB':
-                    experiment['strategy']['rsn_timeout'] = 60*40
-                if strategy is not 'NRR':
-                    experiment['strategy']['p'] = CACHING_PROBABILITY
+                experiment['strategy']['p'] = CACHING_PROBABILITY
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
                 experiment['joint_cache_rsn_placement']['network_rsn'] = rsn_cache_ratio * network_cache
                 experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = rsn_cache_ratio
                 experiment['desc'] = "RSN size sensitivity -> RSN/cache ratio: %s" % str(rsn_cache_ratio)
                 EXPERIMENT_QUEUE.append(experiment)
+
 """
 
 """
-latencyVSfreshness & cachehitsVSfreshness, etc.
+3. latencyVSfreshness & cachehitsVSfreshness, etc.
+"""
+
+"""
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for asn in [3967]:
-       # for fresh_interval in [0, 0.1, 0.5, 2.5, 4.0]:
-        for fresh_interval in [4.0]:
-            for extra_quota in [-2, -1, 0, 1, 2, 3]:
+    for asn in [3257]:
+        for fresh_interval in [10.0, 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 600.0, 1200.0]:
                 experiment = copy.deepcopy(base)
                 experiment['topology']['asn'] = asn
-                experiment['strategy']['name'] = 'LIRA_DFIB'
+                experiment['strategy']['name'] = 'LIRA_BC_HYBRID'
                 experiment['strategy']['p'] = CACHING_PROBABILITY
                 experiment['strategy']['rsn_fresh'] = fresh_interval
-                experiment['strategy']['extra_quota'] = extra_quota
+                experiment['strategy']['extra_quota'] = 3
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
                 experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
                 experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
@@ -136,14 +137,16 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
 """
 1. Extra Quota with Probability
 """
+
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for strategy in ['LIRA_DFIB', 'LIRA_BC_HYBRID']:    
+    for strategy in ['LIRA_BC_HYBRID', 'LIRA_DFIB', 'LIRA_DFIB_OPH']:    
+    #for strategy in ['LIRA_DFIB_OPH']:    
         for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
-            for extra_quota in [0, 1, 2, 3, 4, 5]:
+            for extra_quota in [2, 3, 4, 5]:
                 experiment = copy.deepcopy(base)
-                experiment['topology']['asn'] = 3967 #3257 #3967
+                experiment['topology']['asn'] = 3257 #3967
                 experiment['strategy']['name'] = strategy
-                experiment['strategy']['rsn_fresh'] = 3.0
+                experiment['strategy']['rsn_fresh'] = 5.0
                 experiment['strategy']['p'] = caching_probability 
                 experiment['strategy']['extra_quota'] = extra_quota
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
@@ -153,19 +156,36 @@ for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
                 EXPERIMENT_QUEUE.append(experiment)
 
 """
+# experiments comparing different stragies 
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for timeout in [0.1, 0.5, 1.0, 4.0, 10.0, 40.0, 300.0, 3600.0]:
-        experiment = copy.deepcopy(base)
-        experiment['topology']['asn'] = 3967
-        experiment['strategy']['name'] = 'LIRA_DFIB'
-        experiment['strategy']['p'] = CACHING_PROBABILITY
-        experiment['strategy']['rsn_timeout'] = timeout 
-        experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-        experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-        experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-        experiment['desc'] = "impact of timeout"
-        EXPERIMENT_QUEUE.append(experiment)
+    for strategy in ['NDN', 'NRR_PROB', 'LIRA_BC']:    
+        for caching_probability in [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]:
+            experiment = copy.deepcopy(base)
+            experiment['topology']['asn'] = 3257 #3967
+            experiment['strategy']['name'] = strategy
+            experiment['strategy']['p'] = caching_probability 
+            experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+            experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
+            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
+            experiment['desc'] = "caching probability: %s" % str(caching_probability)
+            EXPERIMENT_QUEUE.append(experiment)
 """
 
-
-
+"""
+4th Experiments: Expiration time experiments
+"""
+"""
+for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
+    for strategy in ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']:    
+        for timeout in [5.0, 10.0, 30.0, 60.0, 120.0, 240.0, 360.0, 600.0, 1200.0, 3600.0, 7200.0]:
+            experiment = copy.deepcopy(base)
+            experiment['topology']['asn'] = 3257
+            experiment['strategy']['name'] = strategy
+            experiment['strategy']['p'] = CACHING_PROBABILITY
+            experiment['strategy']['rsn_timeout'] = timeout 
+            experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+            experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
+            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
+            experiment['desc'] = "impact of timeout"
+            EXPERIMENT_QUEUE.append(experiment)
+"""
