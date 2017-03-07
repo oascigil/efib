@@ -153,6 +153,19 @@ class NetworkView(object):
         """
         return self.model.topology
 
+    def get_neighbors(self, node):
+        """Returns the neighbors of a given node
+        Parameters:
+        -----------
+        node : node of a topology
+
+        Returns
+        -------
+        list : list containing the neighboring nodes of node
+        """
+        neighbors = self.topology().neighbors(node)
+        return neighbors
+
     def cache_nodes(self, size=False):
         """Returns a list of nodes with caching capability
         
@@ -258,6 +271,34 @@ class NetworkView(object):
         """
         return node in self.model.rsn
     
+    def peek_rsn(self, node, content):
+        """peek at rsn table to see if it contains the content
+        without changing the state of the rsn cache object
+        """
+        if node in self.model.rsn:
+            return self.model.rsn[node].has(content)
+
+        return None 
+        
+    def get_rsn_position(self, node, content=None):
+        """Retrieve the position of the content in the RSN cache
+
+        Parameters
+        ----------
+        node : any hashable type
+            The node where the RSN entry is retrieved
+        content : any hashable type
+            The content identifier to retrieve. If not specified
+            the content being transferred in the session is used
+            
+        Returns
+        -------
+        position : integer within 0 (head) to size - 1 (tail)
+        """
+
+        # position raises an error if the content is not in the cache
+        return self.model.rsn[node].position(content)
+
     def rsn_lookup(self, node, content):
         """Check if the RSN table of a node has a content object, without
         changing the internal state of the table.
@@ -282,6 +323,15 @@ class NetworkView(object):
         if node in self.model.rsn:
             return self.model.rsn[node].value(content)
     
+    def get_rsn_table(self, node):
+        """Return the rsn table of a node
+        """
+
+        if node in self.model.rsn:
+            return self.model.rsn[node]
+        else:
+            return None
+        
     def rsn_dump(self, node):
         """Returns the dump of the content of the RSN table in a specific node
         
@@ -387,7 +437,7 @@ class NetworkModel(object):
                           for node in self.cache_size}
         
         # RSN and cache must have the same cache eviction policy
-        self.rsn = {node: keyval_cache(CACHE_POLICY[policy_name](size, **policy_args))
+        self.rsn = {node: keyval_cache(CACHE_POLICY[policy_name](size, **policy_args), size)
                         for node, size in self.rsn_size.iteritems()}
 
 
@@ -556,6 +606,15 @@ class NetworkController(object):
         else:
             return False
 
+    def follow_trail(self, quota, success):
+        """
+        Keep track of trail discoveries and their success and quota amount used
+        """
+
+        if self.session['log']:
+            self.collector.offpath_trail(quota, success)
+
+
     def remove_content(self, node):
         """Remove the content being handled from the cache
         
@@ -571,6 +630,7 @@ class NetworkController(object):
         """
         if node in self.model.cache:
             return self.model.cache[node].remove(self.session['content'])
+
 
     def put_rsn(self, node, next_hop, content=None):
         """Store forwarding information in the Recently Served Name (RSN) table
@@ -602,7 +662,6 @@ class NetworkController(object):
     
     def get_rsn(self, node, content=None):
         """Get an RSN entry of the content being handled from a given node.
-
         Parameters
         ----------
         node : any hashable type
@@ -620,6 +679,8 @@ class NetworkController(object):
         if node in self.model.rsn:
             content = self.session['content'] if content is None else content
             return self.model.rsn[node].get(content)
+
+        return None
 
     def invalidate_trail(self, trail, content=None):
         """Remove a trail consisting of RSN state at multiple nodes

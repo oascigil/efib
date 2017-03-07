@@ -31,6 +31,9 @@ __all__ = [
        'LiraProbCache',
        'LiraChoice',
        'NearestReplicaRouting',
+       'LiraDfib',
+       'LiraDfibOph',
+       'LiraDfibSc'
            ]
 
 #TODO: Implement BaseOnPath to reduce redundant code
@@ -161,7 +164,7 @@ class RsnEntry(object):
         If there is no such RnsNexthop, then return None
         """
         for nh in self.nexthops:
-            if nh.nexthop is node:
+            if nh.nexthop == node:
                 return nh
         else:
             return None
@@ -174,7 +177,7 @@ class RsnEntry(object):
         ----------
         nh : node identifier; delete nexthop entry whose nexthop is nh
         """
-        self.nexthops = [x for x in self.nexthops if x.nexthop is not nh] 
+        self.nexthops = [x for x in self.nexthops if x.nexthop != nh] 
 
     def insert_nexthop(self, nexthop, dest, distance, time, is_used=False):
         """insert a nexthop entry along with distance and time of insertion attributes
@@ -223,7 +226,7 @@ class RsnEntry(object):
         
         # list comprehension is a nice tool!
         best_nexthops = [x for x in self.nexthops if x.is_used_and_fresh(time, self.fresh_interval)]
-        best_nexthops = [x for x in best_nexthops if x.nexthop is not node]
+        best_nexthops = [x for x in best_nexthops if x.nexthop != node]
         
         best_nexthops.sort(key=get_timestamp, reverse=True)
         if (len(best_nexthops) >= num_entries):
@@ -231,7 +234,7 @@ class RsnEntry(object):
         
         # Add freshest nexthops if there is still space 
         filtered_nexthops = [x for x in self.nexthops if not x.is_used_and_fresh(time, self.fresh_interval)]
-        filtered_nexthops = [x for x in filtered_nexthops if x.nexthop is not node]
+        filtered_nexthops = [x for x in filtered_nexthops if x.nexthop != node]
         
         filtered_nexthops.sort(key=get_timestamp, reverse=True)
         len_best_nexthops = len(best_nexthops)
@@ -274,10 +277,10 @@ class RsnEntry(object):
         self.nexthops = [x for x in self.nexthops if not x.is_expired(time, self.expiration_interval)]
         freshest = None
         for n in self.nexthops:
-            if freshest is None or (n.age(time) < freshest.age(time) and n.nexthop is not node):
+            if freshest is None or (n.age(time) < freshest.age(time) and n.nexthop != node):
                 freshest = n
 
-        if freshest is not None and freshest.nexthop is node:
+        if freshest is not None and freshest.nexthop == node:
             freshest = None
 
         return freshest
@@ -300,7 +303,7 @@ class RsnEntry(object):
         self.nexthops.sort(key=get_timestamp, reverse=True)
         
         filtered_nexthops = self.nexthops[:]
-        filtered_nexthops = [x for x in filtered_nexthops if x.nexthop is not node]
+        filtered_nexthops = [x for x in filtered_nexthops if x.nexthop != node]
         return filtered_nexthops[0:k]
 
         #nexthop_obj = self.nexthops[0] if len(self.nexthops) > 0 else None
@@ -1025,7 +1028,7 @@ class NearestReplicaRoutingProb(Strategy):
         self.controller.get_content(nearest_replica)
         # Now we need to return packet and we have options
         path = list(reversed(self.view.shortest_path(receiver, nearest_replica)))
-        if source is nearest_replica:
+        if source == nearest_replica:
             for u, v in path_links(path):
                 self.controller.forward_content_hop(u, v)
                 if self.view.has_cache(v) and (self.p == 1.0 or random.random() <= self.p):
@@ -1384,11 +1387,11 @@ class LiraBcHybrid(Strategy):
                     on_path_serving_node = v
                     break
             packet_quota += 1
-            if packet_quota >= quota_limit and v is not source:
+            if packet_quota >= quota_limit and v != source:
                 # we spent the quota without either reaching the source or finding a cached copy
                 break
             rsn_entry = self.lookup_rsn_at_node(v)
-            if packet_quota <= quota_limit and rsn_entry is not None and v is not source:
+            if packet_quota <= quota_limit and rsn_entry is not None and v != source:
                 off_path_serving_node = None
                 off_path_fresh_trail = False
                 next_hop = path[hop + 1]
@@ -1438,7 +1441,7 @@ class LiraBcHybrid(Strategy):
                     v = path[hop]
                     self.controller.forward_request_hop(u, v)
             path.reverse()
-            if path[0] is source:
+            if path[0] == source:
                 for hop in range(1, len(path)):
                     curr_hop = path[hop]
                     prev_hop = path[hop-1]
@@ -1481,7 +1484,7 @@ class LiraDfibOph(Strategy):
     in the RSN only if evicted
     """
 
-    def __init__(self, view, controller, p=1.0, rsn_fresh=0.0, rsn_timeout=360.0, extra_quota=3, fan_out=2):
+    def __init__(self, view, controller, p=1.0, extra_quota=3, fan_out=1, quota_increment=0.3):
         """Constructor
         
         Parameters
@@ -1501,12 +1504,12 @@ class LiraDfibOph(Strategy):
         """
         super(LiraDfibOph, self).__init__(view, controller)
         self.p = p
-        self.rsn_fresh = rsn_fresh
-        self.rsn_timeout = rsn_timeout
-        self.extra_quota = extra_quota
         self.fan_out = fan_out
+        self.extra_quota = extra_quota
+        self.n_requests = 0
+        self.first = False
+        self.quota_increment = quota_increment
 
-    
     def get_path_delay(path):
         path_delay = 0.0
         for hop in range(1, len(path)):
@@ -1515,58 +1518,204 @@ class LiraDfibOph(Strategy):
             path_delay += self.view.link_delay(u,v)
         return path_delay
 
-    def lookup_rsn_at_node(self, v):
-        rsn_entry = self.controller.get_rsn(v) if self.view.has_rsn_table(v) else None
-        return rsn_entry
+    def form_key(self, content, node):
+        """ form key to lookup content from RSN table
+        """
+        key = repr(content) + "-" + repr(node)
+        return key
+
+    # LIRA_DFIB_OPH
+    def lookup_rsn_at_node(self, node, content=None, ignore=[], fan_out=1):
+        """lookup the rsn table at node 
+
+        Parameters
+        ----------
+        node : node id of the node with rsn table
+        content : the content id to lookup
+        ignore : list of nexthop nodes to ignore
+        fan_out : max number of next-hops returned 
+
+        Return
+        ------
+        A list of rsn entries each represented as a triple; first index is the 
+        next-hop node id, second index id the success rate of the entry 
+        in the RSN table, third index is the position (i.e., rank) of the entry
+        in the RSN table. 
+        """
         
-    def follow_offpath_trail(self, prev_hop, curr_hop, rsn_hop, on_path_trail, off_path_trails, source, time):
+        if content is None:
+            content = self.controller.session['content']
+
+        neighbors = self.view.get_neighbors(node)
+        neighbors = [n for n in neighbors if n not in ignore]
+        neighbors = [n for n in neighbors if n not in self.view.topology().sources()]
+        neighbors = [n for n in neighbors if n not in self.view.topology().receivers()]
+        
+        rsn_entries = []
+        for n in neighbors:
+            key = self.form_key(content, n) #repr(content) + "/" + repr(n)
+            nexthop = self.view.peek_rsn(node, key)
+            if nexthop is not None:
+                if nexthop != n:
+                    #print "Current node: " + repr(node) + " neighbor: " + repr(n) + " and nexthop: " + repr(nexthop) + " key: " + repr(key)
+                    #print "Neighbors: " + repr(neighbors)
+                    raise RuntimeError('This should not happen in lookup_rsn_at_node')
+                position = self.view.get_rsn_position(node, key)
+                rsn_table = self.view.get_rsn_table(node)
+                #n_lookups = rsn_table.get_nlookups()
+                #n_success = rsn_table.get_nsuccess()
+                n_quotas = rsn_table.get_quota()
+                self.controller.get_rsn(node, key) #lookup to change the position now
+                success = 0.0
+                quota = n_quotas[position]
+                rsn_entries.append([nexthop, position, quota])
+
+                """
+                if n_lookups[position] < 3: # TODO create a parameter for a threshold
+                    dfib_size = rsn_table.get_size()
+                    success = 0.0 #(1.0 - ((1.0*position)/dfib_size))
+                    rsn_entries.append([nexthop, success, position])
+                else:
+                    success = (1.0*n_success[position])/n_lookups[position]
+                    rsn_entries.append([nexthop, success, position])
+                    if not self.first:
+                        print "Accumulated enough statistics!"
+                        self.first = True
+                    #print "Nexthop: " + repr(nexthop) + " pos: " + repr(position) + " succ: " + repr(success)
+                """
+
+        # sort the entries by success rate (increasing order -- head is 0 and tail is size-1)
+        rsn_entries.sort(key = lambda x : x[1])
+        
+        return rsn_entries[0:fan_out]
+        
+    # LIRA_DFIB_OPH
+    def invalidate_tr(self, trail, content=None):
+        """invalidate trail of DFIB
+        """
+        #print "invalidating trail " + repr(trail) 
+        content = self.controller.session['content'] if content is None else content
+        for hop in range(0, len(trail)-1):
+            curr_hop = trail[hop]
+            next_hop = trail[hop+1]
+            if not self.view.has_rsn_table(curr_hop):
+                continue
+            key = self.form_key(content, next_hop) 
+            is_removed = self.controller.remove_rsn(curr_hop, key)
+            #print "Removing trail: " + repr(curr_hop) + " -> " + repr(next_hop)
+            if is_removed is None:
+                print "Error: " + " Trail: " + repr(trail) + " key " + repr(key) + " at node " + repr(curr_hop) + " nexthop " + repr(next_hop)
+                print "is_removed: " + repr(is_removed)
+                raise RuntimeError('This should not happen in invalidate_tr')
+            #else:
+            #    print "Trail is removed at node: " + repr(curr_hop)
+
+    # LIRA_DFIB_OPH
+    def follow_offpath_trail(self, prev_hop, curr_hop, rsn_hop, on_path_trail, off_path_trails, source, position, quota):
         off_path_serving_node = None
         trail = [curr_hop]
+        positions = [position]
         # This loop is guaranteed to execute at least once, as rsn_hop is not None
         while rsn_hop is not None:
             prev_hop = curr_hop
             curr_hop = rsn_hop
-
             if curr_hop in trail:
             # loop in the explored off-path trail
-                self.controller.invalidate_trail(trail)
+                #print "Loop in the trail, calling invalidate " + repr(trail) + " / " + repr(rsn_hop)
+                self.invalidate_tr(trail)
                 break
-
             else:
                 trail.append(curr_hop)
                 if curr_hop == source or self.view.has_cache(curr_hop):
                     if self.controller.get_content(curr_hop):
-                        trail = on_path_trail[:-1] + trail
-                        off_path_trails.append(trail)
                         off_path_serving_node = curr_hop
+                        #print "Off path search successful: Found content at node " + repr(off_path_serving_node)
                         break
-
-                rsn_entry = self.lookup_rsn_at_node(curr_hop)
-                if rsn_entry is not None:
-                    rsn_nexthop_obj = rsn_entry.get_freshest_except_node(time, prev_hop)
-                    rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
-
-                    if not len(rsn_entry.nexthops):
-                    # if the rsn entry's nexthops are  expired, remove
-                        self.controller.remove_rsn(curr_hop)
-                                    
-                else:
+                
+                rsn_entries = self.lookup_rsn_at_node(curr_hop, None, [prev_hop], 1) # returns an array of [[nexthop, position, quota]...]
+                if not len(rsn_entries):
                     rsn_hop = None
+                else:
+                    rsn_entry = rsn_entries[0]
+                    positions.append(rsn_entry[1])
+                    rsn_hop = rsn_entry[0]
         else: # else of while
         # Onur: if break is executed above, this else is skipped
         # This point is reached when I did explore an RSN
         # trail but failed. 
         # Invalidate the trail here and return to on-path node
-            self.controller.invalidate_trail(trail)
-            #TODO if, afer invalidation, there is no nexthop entries
-            # then delete the rsn entry
-            return None
-        
+            #print "Followed an RSN, but failed: " + repr(trail)
+            #print "on-path trail " + repr(on_path_trail)
+            self.invalidate_tr(trail)
+
+        indx = 0
+        #print "Trail: " + repr(trail) 
+        for position in positions:
+            rsn = self.view.get_rsn_table(trail[indx])
+            #if rsn is None:
+                #print "Node: " + repr(trail[indx]) + " has no rsn table "
+            n_success = rsn.get_nsuccess()
+            n_lookups = rsn.get_nlookups()
+            n_quotas = rsn.get_quota()
+            if off_path_serving_node is None:
+                #n_quotas[position] /= 2
+                n_quotas[position] = max(1, n_quotas[position]/2) #XXX Lower bound is 1
+                n_lookups[position] += 1
+            else:
+                n_quotas[position] += self.quota_increment
+                n_success[position] += 1
+                n_lookups[position] += 1
+            indx += 1
+
+        if off_path_serving_node is not None:
+            trail = on_path_trail[:-1] + trail
+            off_path_trails.append(trail)
+            success = True
+            self.controller.follow_trail(quota, success)
+        else:
+            success = False
+            self.controller.follow_trail(quota, success)
+
         return off_path_serving_node
 
-    # DFIB_OPH
+    def print_quotas(self, num):
+        """
+        Print the quotas for a router (for debugging purposes)
+        """
+        topo = self.view.topology()
+        routers = [v for v in topo.nodes_iter()
+                     if topo.node[v]['stack'][0] == 'router']
+        
+        fname = "./Data/quota_stats_" + repr(num)
+        aFile = open(fname, 'w')
+        for v in routers:
+            rsn = self.view.get_rsn_table(v)
+            n_quotas = rsn.get_quota()
+            n_lookups = rsn.get_nlookups()
+            n_success = rsn.get_nsuccess()
+            size = self.view.model.rsn_size[v]
+            num_neighbors = len(self.view.get_neighbors(v))
+            s = "Printing rsn table Quotas for " + repr(v) + " with " + repr(num_neighbors) + " neighbors\n"
+            aFile.write(s)
+            for index in range(0, size):
+                s =  "\t" + repr(index) + ": " + repr(n_quotas[index]) + " : " + repr(n_success[index]) + " : " + repr(n_lookups[index]) +  "\n"
+                aFile.write(s)
+
+        aFile.close()
+
+    # LIRA_DFIB_OPH
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
+        """
+        if self.n_requests == 0:
+            self.print_quotas(0)
+        elif self.n_requests == 300000:
+            self.print_quotas(1)
+        elif self.n_requests == 600000:
+            self.print_quotas(2)
+        self.n_requests += 1
+        """
+        #    print "Done with: " + repr(self.n_requests)
         self.controller.start_session(time, receiver, content, log)
         # Start point of the request path
         curr_hop = receiver
@@ -1589,7 +1738,7 @@ class LiraDfibOph(Strategy):
 
         path = self.view.shortest_path(curr_hop, source)
         # Quota Limit on the request
-        quota_limit = len(path) - 1 + self.extra_quota
+        remaining_quota = len(path) - 1 + self.extra_quota
         # Handle request        
         # Route requests to original source and queries caches on the path
         for hop in range(1, len(path)):
@@ -1602,31 +1751,33 @@ class LiraDfibOph(Strategy):
                 if self.controller.get_content(v):
                     on_path_serving_node = v
                     break
-            packet_quota += 1
-            if packet_quota >= quota_limit and v is not source:
+            remaining_quota-=1.0
+            if remaining_quota <= 0 and v != source:
                 # we spent the quota without either reaching the source or finding a cached copy
+                #print "Out of Quota for content: " + repr(content)
                 break
-            rsn_entry = self.lookup_rsn_at_node(v)
-            if packet_quota <= quota_limit and rsn_entry is not None and v is not source:
-                off_path_serving_node = None
-                next_hop = path[hop + 1]
-                rsn_nexthop_objs = rsn_entry.get_topk_freshest_except_node(time, u, self.fan_out)
-                # if the rsn entry's nexthops are  expired, remove
-                if not len(rsn_entry.nexthops):
-                    self.controller.remove_rsn(v)
-                for rsn_nexthop_obj in rsn_nexthop_objs:
-                    rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
-                    if rsn_hop is not None and rsn_hop == next_hop:
-                        # we just found an "on-path" hint: continue with the FIB nexthop
-                        continue 
-                    elif rsn_hop is not None and packet_quota < quota_limit: 
-                    # If entry in RSN table, then start detouring to get cached
-                    # content, if any
-                        packet_quota += 1
-                        prev_hop = u
-                        curr_hop = v
-                        
-                        off_path_serving_node = self.follow_offpath_trail(prev_hop, curr_hop, rsn_hop, on_path_trail, off_path_trails, source, time)
+
+            rsn_entries = self.lookup_rsn_at_node(v, None, [u], self.fan_out)
+            #print "Lookup returned: " + repr(len(rsn_entries)) + " entries at node: " + repr(v) + " for content: " + repr(content)
+            for rsn_entry in rsn_entries:
+                if remaining_quota <= 0:
+                    #print "Out of Quota in off-path search for content: " + repr(content)
+                    break
+                next_hop = path[hop+1]
+                rsn_hop = rsn_entry[0]
+                position = rsn_entry[1]
+                quota = rsn_entry[2]
+                if rsn_hop == next_hop:
+                    # we just found an "on-path" hint: continue with the FIB nexthop
+                    continue
+                """
+                if success_rate is 0:
+                    remaining_quota -= 1
+                else:
+                    remaining_quota -= remaining_quota*success_rate
+                """
+                remaining_quota -= quota
+                off_path_serving_node = self.follow_offpath_trail(u, v, rsn_hop, on_path_trail, off_path_trails, source, position, quota)
 
         else: # for concluded without break. Get content from source
             self.controller.get_content(v)
@@ -1648,19 +1799,18 @@ class LiraDfibOph(Strategy):
                     v = path[hop]
                     self.controller.forward_request_hop(u, v)
             path.reverse()
-            if path[0] is source:
+            if path[0] == source:
             # Content coming from the server (i.e., source)
-                for hop in range(1, len(path)):
+            # Insert/update rsn entry towards the direction of user
+                for hop in range(2, len(path)-1):
                     curr_hop = path[hop]
                     prev_hop = path[hop-1]
-                    if visited.get(prev_hop):
+                    if prev_hop in visited.keys() and visited[prev_hop]:
                         break
                     visited[prev_hop] = True
-                    # Insert/update rsn entry towards the direction of user
-                    rsn_entry = self.controller.get_rsn(prev_hop) if self.view.has_rsn_table(prev_hop) else None
-                    rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
-                    rsn_entry.insert_nexthop(curr_hop, curr_hop, len(path) - hop, time) 
-                    self.controller.put_rsn(prev_hop, rsn_entry)
+                    key = self.form_key(content, curr_hop)
+                    #print "Adding key: " + repr(key) + " @current node: " + repr(prev_hop)
+                    self.controller.put_rsn(prev_hop, curr_hop, key)
                     # Insert content to cache
                     if self.view.has_cache(curr_hop):
                         if self.p == 1.0 or random.random() <= self.p:
@@ -1669,17 +1819,16 @@ class LiraDfibOph(Strategy):
                     self.controller.forward_content_hop(prev_hop, curr_hop)
             else:
             # Content coming from a cache 
-                for hop in range(1, len(path)):
+            # Insert/Update the rsn entry towards the direction of cache if such an entry existed (in the case of off-path hit)
+                for hop in range(1, len(path)-1):
                     curr_hop = path[hop]
                     prev_hop = path[hop-1]
-                    if visited.get(prev_hop):
+                    if prev_hop in visited.keys() and visited[prev_hop]:
                         break
                     visited[prev_hop] = True
-                    # Insert/Update the rsn entry towards the direction of cache if such an entry existed (in the case of off-path hit)
-                    rsn_entry = self.controller.get_rsn(curr_hop) if self.view.has_rsn_table(curr_hop) else None
-                    rsn_entry = RsnEntry(self.rsn_fresh, self.rsn_timeout) if rsn_entry is None else rsn_entry
-                    rsn_entry.insert_nexthop(prev_hop, prev_hop, len(path) - hop, time)
-                    self.controller.put_rsn(curr_hop, rsn_entry)
+                    key = self.form_key(content, prev_hop)
+                    #print "Adding key: " + repr(key) + " @current node: " + repr(curr_hop)
+                    self.controller.put_rsn(curr_hop, prev_hop, key)
                     # Forward the content
                     self.controller.forward_content_hop(prev_hop, curr_hop)
         """
@@ -1709,6 +1858,7 @@ class LiraDfibOph(Strategy):
         """
         self.controller.end_session()
 
+# LANMAN:
 @register_strategy('LIRA_DFIB')
 class LiraDfib(Strategy):
     """LIRA strategy with shortest path routing and RSN routing up to a
@@ -1718,7 +1868,7 @@ class LiraDfib(Strategy):
     in the RSN only if evicted
     """
 
-    def __init__(self, view, controller, p=1.0, rsn_fresh=0.0, rsn_timeout=360.0, extra_quota=3, fan_out=2):
+    def __init__(self, view, controller, p=1.0, rsn_fresh=0.0, rsn_timeout=float('inf'), extra_quota=3, fan_out=1):
         """Constructor
         
         Parameters
@@ -1743,7 +1893,6 @@ class LiraDfib(Strategy):
         self.extra_quota = extra_quota
         self.fan_out = fan_out
 
-
     def get_path_delay(path):
         path_delay = 0.0
         for hop in range(1, len(path)):
@@ -1751,7 +1900,7 @@ class LiraDfib(Strategy):
             v = path[hop]
             path_delay += self.view.link_delay(u,v)
         return path_delay
-
+    # LIRA_DFIB
     def lookup_rsn_at_node(self, v):
         rsn_entry = self.controller.get_rsn(v) if self.view.has_rsn_table(v) else None
         return rsn_entry
@@ -1766,6 +1915,7 @@ class LiraDfib(Strategy):
 
             if curr_hop in trail:
             # loop in the explored off-path trail
+                print "Loop in the explored off-path trail"
                 self.controller.invalidate_trail(trail)
                 break
 
@@ -1799,8 +1949,16 @@ class LiraDfib(Strategy):
             # then delete the rsn entry
             return None
         
+        if off_path_serving_node is not None:
+            success = True
+            self.controller.follow_trail(1, success)
+        else:
+            success = False
+            self.controller.follow_trail(1, success)
+
         return off_path_serving_node
 
+    #LIRA_DFIB
     @inheritdoc(Strategy)
     def process_event(self, time, receiver, content, log):
         self.controller.start_session(time, receiver, content, log)
@@ -1839,11 +1997,11 @@ class LiraDfib(Strategy):
                     on_path_serving_node = v
                     break
             packet_quota += 1
-            if packet_quota >= quota_limit and v is not source:
+            if packet_quota >= quota_limit and v != source:
                 # we spent the quota without either reaching the source or finding a cached copy
                 break
             rsn_entry = self.lookup_rsn_at_node(v)
-            if packet_quota <= quota_limit and rsn_entry is not None and v is not source:
+            if packet_quota <= quota_limit and rsn_entry is not None and v != source:
                 off_path_serving_node = None
                 next_hop = path[hop + 1]
                 rsn_nexthop_objs = rsn_entry.get_topk_freshest_except_node(time, u, self.fan_out)
@@ -1869,6 +2027,7 @@ class LiraDfib(Strategy):
             self.controller.get_content(v)
             on_path_serving_node = v
      
+        # LIRA_DFIB
         # Return content: 
         # Sort return paths by length, TODO replace this by: sort by path latency
         sorted_paths = sorted(off_path_trails, key=len)
@@ -1985,7 +2144,7 @@ class LiraBC(Strategy):
                     on_path_serving_node = v
                     break
             rsn_entry = self.controller.get_rsn(v) if self.view.has_rsn_table(v) else None
-            if rsn_entry is not None and v is not source:
+            if rsn_entry is not None and v != source:
                 next_hop = path[hop + 1]
                 rsn_nexthop_obj = rsn_entry.get_freshest_except_nodes(time, [u, next_hop])
                 rsn_hop = rsn_nexthop_obj.nexthop if rsn_nexthop_obj is not None else None
@@ -2045,9 +2204,15 @@ class LiraBC(Strategy):
         else: # for concluded without break. Get content from source
             self.controller.get_content(v)
             on_path_serving_node = v
-     
-        # Return content:
+        
+        if off_path_serving_node is None:
+            success = False
+            self.controller.follow_trail(0, success)
+        else:
+            success = True
+            self.controller.follow_trail(0, success)
 
+        # Return content:
         # if on_path_serving_node is not None, then follow the reverse of on-path
         if on_path_serving_node is not None:
             path = list(reversed(self.view.shortest_path(receiver, on_path_serving_node)))
@@ -2570,4 +2735,355 @@ class LiraProbCache(Strategy):
                         self.controller.put_rsn(node=v, 
                                                 next_hop=self.next_hop[v].pop(cache_evicted),
                                                 content=cache_evicted)
+        self.controller.end_session()
+
+@register_strategy('LIRA_DFIB_SC')
+class LiraDfibSc(Strategy):
+    """DFIB strategy with static cost
+
+    If a node has got both an RSN and a cache, if the content is caches, put it
+    in the RSN only if evicted
+    """
+
+    def __init__(self, view, controller, p=1.0, extra_quota=3, fan_out=1, quota_increment=0.3):
+        """Constructor
+        
+        Parameters
+        ----------
+        view : NetworkView
+            An instance of the network view
+        controller : NetworkController
+            An instance of the network controller
+        max_detour : int, optional
+            The max number of hop that can be performed following an RSN trail
+        p : float, optional
+            The probability to insert a content in a cache. If 1, the strategy
+            always insert content, like a normal LCE, if less it behaves like
+            a Bernoulli random caching strategy
+        rsn_on_evict : bool, optional
+            If True content evicted from cache are inserted in the RSN
+        """
+        super(LiraDfibSc, self).__init__(view, controller)
+        self.p = p
+        self.fan_out = fan_out
+        self.extra_quota = extra_quota
+        self.n_requests = 0
+        self.first = False
+        self.quota_increment = quota_increment
+
+    def get_path_delay(path):
+        path_delay = 0.0
+        for hop in range(1, len(path)):
+            u = path[hop-1]
+            v = path[hop]
+            path_delay += self.view.link_delay(u,v)
+        return path_delay
+
+    def form_key(self, content, node):
+        """ form key to lookup content from RSN table
+        """
+        key = repr(content) + "-" + repr(node)
+        return key
+
+    # LIRA_DFIB_SC
+    def lookup_rsn_at_node(self, node, content=None, ignore=[], fan_out=1):
+        """lookup the rsn table at node 
+
+        Parameters
+        ----------
+        node : node id of the node with rsn table
+        content : the content id to lookup
+        ignore : list of nexthop nodes to ignore
+        fan_out : max number of next-hops returned 
+
+        Return
+        ------
+        A list of rsn entries each represented as a triple; first index is the 
+        next-hop node id, second index id the success rate of the entry 
+        in the RSN table, third index is the position (i.e., rank) of the entry
+        in the RSN table. 
+        """
+        
+        if content is None:
+            content = self.controller.session['content']
+
+        neighbors = self.view.get_neighbors(node)
+        neighbors = [n for n in neighbors if n not in ignore]
+        neighbors = [n for n in neighbors if n not in self.view.topology().sources()]
+        neighbors = [n for n in neighbors if n not in self.view.topology().receivers()]
+        
+        rsn_entries = []
+        for n in neighbors:
+            key = self.form_key(content, n) #repr(content) + "/" + repr(n)
+            nexthop = self.view.peek_rsn(node, key)
+            if nexthop is not None:
+                if nexthop != n:
+                    #print "Current node: " + repr(node) + " neighbor: " + repr(n) + " and nexthop: " + repr(nexthop) + " key: " + repr(key)
+                    #print "Neighbors: " + repr(neighbors)
+                    raise RuntimeError('This should not happen in lookup_rsn_at_node')
+                position = self.view.get_rsn_position(node, key)
+                rsn_table = self.view.get_rsn_table(node)
+                #n_lookups = rsn_table.get_nlookups()
+                #n_success = rsn_table.get_nsuccess()
+                #n_quotas = rsn_table.get_quota()
+                self.controller.get_rsn(node, key) #lookup to change the position now
+                success = 0.0
+                rsn_entries.append([nexthop, position, 1])
+
+                """
+                if n_lookups[position] < 3: # TODO create a parameter for a threshold
+                    dfib_size = rsn_table.get_size()
+                    success = 0.0 #(1.0 - ((1.0*position)/dfib_size))
+                    rsn_entries.append([nexthop, success, position])
+                else:
+                    success = (1.0*n_success[position])/n_lookups[position]
+                    rsn_entries.append([nexthop, success, position])
+                    if not self.first:
+                        print "Accumulated enough statistics!"
+                        self.first = True
+                    #print "Nexthop: " + repr(nexthop) + " pos: " + repr(position) + " succ: " + repr(success)
+                """
+
+        # sort the entries by success rate (increasing order -- head is 0 tail is size-1)
+        rsn_entries.sort(key = lambda x : x[1])
+        
+        return rsn_entries[0:fan_out]
+        
+    # LIRA_DFIB_SC
+    def invalidate_tr(self, trail, content=None):
+        """invalidate trail of DFIB
+        """
+        #print "invalidating trail " + repr(trail) 
+        content = self.controller.session['content'] if content is None else content
+        for hop in range(0, len(trail)-1):
+            curr_hop = trail[hop]
+            next_hop = trail[hop+1]
+            if not self.view.has_rsn_table(curr_hop):
+                continue
+            key = self.form_key(content, next_hop) 
+            is_removed = self.controller.remove_rsn(curr_hop, key)
+            #print "Removing trail: " + repr(curr_hop) + " -> " + repr(next_hop)
+            if is_removed is None:
+                print "Error: " + " Trail: " + repr(trail) + " key " + repr(key) + " at node " + repr(curr_hop) + " nexthop " + repr(next_hop)
+                print "is_removed: " + repr(is_removed)
+                raise RuntimeError('This should not happen in invalidate_tr')
+            #else:
+            #    print "Trail is removed at node: " + repr(curr_hop)
+
+    # LIRA_DFIB_SC
+    def follow_offpath_trail(self, prev_hop, curr_hop, rsn_hop, on_path_trail, off_path_trails, source, position, quota):
+        off_path_serving_node = None
+        trail = [curr_hop]
+        positions = [position]
+        # This loop is guaranteed to execute at least once, as rsn_hop is not None
+        while rsn_hop is not None:
+            prev_hop = curr_hop
+            curr_hop = rsn_hop
+            if curr_hop in trail:
+            # loop in the explored off-path trail
+                #print "Loop in the trail, calling invalidate " + repr(trail) + " / " + repr(rsn_hop)
+                self.invalidate_tr(trail)
+                break
+            else:
+                trail.append(curr_hop)
+                if curr_hop == source or self.view.has_cache(curr_hop):
+                    if self.controller.get_content(curr_hop):
+                        off_path_serving_node = curr_hop
+                        #print "Off path search successful: Found content at node " + repr(off_path_serving_node)
+                        break
+                
+                rsn_entries = self.lookup_rsn_at_node(curr_hop, None, [prev_hop], 1) # returns an array of [[nexthop, position, quota]...]
+                if not len(rsn_entries):
+                    rsn_hop = None
+                else:
+                    rsn_entry = rsn_entries[0]
+                    positions.append(rsn_entry[1])
+                    rsn_hop = rsn_entry[0]
+        else: # else of while
+        # Onur: if break is executed above, this else is skipped
+        # This point is reached when I did explore an RSN
+        # trail but failed. 
+        # Invalidate the trail here and return to on-path node
+            #print "Followed an RSN, but failed: " + repr(trail)
+            #print "on-path trail " + repr(on_path_trail)
+            self.invalidate_tr(trail)
+
+        indx = 0
+        #print "Trail: " + repr(trail) 
+        for position in positions:
+            rsn = self.view.get_rsn_table(trail[indx])
+            #if rsn is None:
+                #print "Node: " + repr(trail[indx]) + " has no rsn table "
+            n_success = rsn.get_nsuccess()
+            n_lookups = rsn.get_nlookups()
+            n_quotas = rsn.get_quota()
+            if off_path_serving_node is None:
+                #n_quotas[position] /= 2
+                #n_quotas[position] = max(1, n_quotas[position]/2) #XXX Lower bound is 1
+                n_lookups[position] += 1
+            else:
+                #n_quotas[position] += self.quota_increment
+                n_success[position] += 1
+                n_lookups[position] += 1
+            indx += 1
+
+        if off_path_serving_node is not None:
+            trail = on_path_trail[:-1] + trail
+            off_path_trails.append(trail)
+            success = True
+            self.controller.follow_trail(1, success)
+        else:
+            success = False
+            self.controller.follow_trail(1, success)
+
+        return off_path_serving_node
+
+    #LIRA_DFIB_SC
+    def print_quotas(self, num):
+        """
+        Print the quotas for a router (for debugging purposes)
+        """
+        topo = self.view.topology()
+        routers = [v for v in topo.nodes_iter()
+                     if topo.node[v]['stack'][0] == 'router']
+        
+        fname = "./Data/quota_stats_" + repr(num)
+        aFile = open(fname, 'w')
+        for v in routers:
+            rsn = self.view.get_rsn_table(v)
+            n_quotas = rsn.get_quota()
+            n_lookups = rsn.get_nlookups()
+            n_success = rsn.get_nsuccess()
+            size = self.view.model.rsn_size[v]
+            num_neighbors = len(self.view.get_neighbors(v))
+            s = "Printing rsn table Quotas for " + repr(v) + " with " + repr(num_neighbors) + " neighbors\n"
+            aFile.write(s)
+            for index in range(0, size):
+                s =  "\t" + repr(index) + ": " + repr(n_quotas[index]) + " : " + repr(n_success[index]) + " : " + repr(n_lookups[index]) +  "\n"
+                aFile.write(s)
+
+        aFile.close()
+
+    # LIRA_DFIB_SC
+    @inheritdoc(Strategy)
+    def process_event(self, time, receiver, content, log):
+        """
+        if self.n_requests == 0:
+            self.print_quotas(0)
+        elif self.n_requests == 300000:
+            self.print_quotas(1)
+        elif self.n_requests == 600000:
+            self.print_quotas(2)
+        self.n_requests += 1
+        """
+        #    print "Done with: " + repr(self.n_requests)
+        self.controller.start_session(time, receiver, content, log)
+        # Start point of the request path
+        curr_hop = receiver
+        # Source of content
+        source = self.view.content_source(content)
+        # Node serving the content on-path
+        on_path_serving_node = None
+        # Node serving the content off-path
+        off_path_serving_node = None
+        # Hop counter of RSN routing
+        rsn_hop_count = 0
+        # Quota used by the packet (flow)
+        packet_quota = 0 
+        # Are we following a fresh (off-path) trail?
+        fresh_trail = False
+        # List of trails followed by the successful (off-path) requests, (more than one trails in the case of request multicasting)
+        off_path_trails = []
+        # On-path trail followed my the main request
+        on_path_trail = [curr_hop]
+
+        path = self.view.shortest_path(curr_hop, source)
+        # Quota Limit on the request
+        remaining_quota = len(path) - 1 + self.extra_quota
+        # Handle request        
+        # Route requests to original source and queries caches on the path
+        for hop in range(1, len(path)):
+            u = path[hop - 1]
+            v = path[hop]
+            on_path_trail.append(v)
+            # self.controller.forward_request_hop(u, v)
+            # Return if there is cache hit at v
+            if self.view.has_cache(v):
+                if self.controller.get_content(v):
+                    on_path_serving_node = v
+                    break
+            remaining_quota-=1.0
+            if remaining_quota <= 0 and v != source:
+                # we spent the quota without either reaching the source or finding a cached copy
+                #print "Out of Quota for content: " + repr(content)
+                break
+
+            rsn_entries = self.lookup_rsn_at_node(v, None, [u], self.fan_out)
+            #print "Lookup returned: " + repr(len(rsn_entries)) + " entries at node: " + repr(v) + " for content: " + repr(content)
+            for rsn_entry in rsn_entries:
+                if remaining_quota <= 0:
+                    #print "Out of Quota in off-path search for content: " + repr(content)
+                    break
+                next_hop = path[hop+1]
+                rsn_hop = rsn_entry[0]
+                position = rsn_entry[1]
+                quota = rsn_entry[2]
+                if rsn_hop == next_hop:
+                    # we just found an "on-path" hint: continue with the FIB nexthop
+                    continue
+                remaining_quota -= quota
+                off_path_serving_node = self.follow_offpath_trail(u, v, rsn_hop, on_path_trail, off_path_trails, source, position, quota)
+
+        else: # for concluded without break. Get content from source
+            self.controller.get_content(v)
+            on_path_serving_node = v
+     
+        # Return content: 
+        # DFIB_SC
+        # Sort return paths by length, TODO replace this by: sort by path latency
+        sorted_paths = sorted(off_path_trails, key=len)
+        if on_path_serving_node is not None: 
+            sorted_paths.append(on_path_trail)
+        visited = {} # keep track of the visited nodes to eliminate duplicate data packets arriving at a hop (simulating PIT forwarding)
+        first = False
+        for path in sorted_paths:
+            if not first: # only forward the request of the shortest path
+                first = True
+                for hop in range(1, len(path)):
+                    u = path[hop - 1]
+                    v = path[hop]
+                    self.controller.forward_request_hop(u, v)
+            path.reverse()
+            if path[0] == source:
+            # Content coming from the server (i.e., source)
+            # Insert/update rsn entry towards the direction of user
+                for hop in range(2, len(path)-1):
+                    curr_hop = path[hop]
+                    prev_hop = path[hop-1]
+                    if prev_hop in visited.keys() and visited[prev_hop]:
+                        break
+                    visited[prev_hop] = True
+                    key = self.form_key(content, curr_hop)
+                    #print "Adding key: " + repr(key) + " @current node: " + repr(prev_hop)
+                    self.controller.put_rsn(prev_hop, curr_hop, key)
+                    # Insert content to cache
+                    if self.view.has_cache(curr_hop):
+                        if self.p == 1.0 or random.random() <= self.p:
+                            self.controller.put_content(prev_hop)
+                    # Forward the content
+                    self.controller.forward_content_hop(prev_hop, curr_hop)
+            else:
+            # Content coming from a cache 
+            # Insert/Update the rsn entry towards the direction of cache if such an entry existed (in the case of off-path hit)
+                for hop in range(1, len(path)-1):
+                    curr_hop = path[hop]
+                    prev_hop = path[hop-1]
+                    if prev_hop in visited.keys() and visited[prev_hop]:
+                        break
+                    visited[prev_hop] = True
+                    key = self.form_key(content, prev_hop)
+                    #print "Adding key: " + repr(key) + " @current node: " + repr(curr_hop)
+                    self.controller.put_rsn(curr_hop, prev_hop, key)
+                    # Forward the content
+                    self.controller.forward_content_hop(prev_hop, curr_hop)
         self.controller.end_session()

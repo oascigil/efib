@@ -58,7 +58,12 @@ class DataCollector(object):
             The content identifier requested by the receiver
         """
         pass
-    
+
+    def offpath_trail(self, quota, success):
+        """Reports success/failure of a discovered off-path trail and the consumed quota amount
+        """
+        pass
+
     def cache_hit(self, node):
         """Reports that the requested content has been served by the cache at
         node *node*.
@@ -160,7 +165,7 @@ class CollectorProxy(DataCollector):
     """
     
     EVENTS = ('start_session', 'end_session', 'cache_hit', 'cache_miss', 'server_hit',
-              'request_hop', 'content_hop', 'results')
+              'request_hop', 'content_hop', 'offpath_trail', 'results')
     
     def __init__(self, view, collectors):
         """Constructor
@@ -206,6 +211,12 @@ class CollectorProxy(DataCollector):
         for c in self.collectors['content_hop']:
             c.content_hop(u, v, main_path)
     
+    @inheritdoc(DataCollector)
+    def offpath_trail(self, quota, success):
+        for c in self.collectors['offpath_trail']:
+            c.offpath_trail(quota, success)
+
+
     @inheritdoc(DataCollector)
     def end_session(self, success=True):
         for c in self.collectors['end_session']:
@@ -293,26 +304,39 @@ class SatisfactionRateCollector(DataCollector):
         self.num_sat_req = 0.0
         self.server_hits = 0.0
         self.cache_hits = 0.0
-        self.hit_indicator = False # a cache/server hit occured in a session to only count the first occurence
+        self.cache_server_simul_hits = 0.0
+        self.sat_indicator = False
+        self.hit_indicator = False 
+        self.server_hit_indicator = False 
     
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
-        self.hit_indicator = False 
+        self.hit_indicator = False
+        self.server_hit_indicator = False
+        self.sat_indicator = False
         self.sess_count += 1
     
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
         if self.hit_indicator is False:
             self.hit_indicator = True
-            self.num_sat_req += 1
             self.cache_hits += 1
-
+            if self.server_hit_indicator: # there was a server hit as well
+                self.cache_server_simul_hits += 1
+        if self.sat_indicator is False:  
+            self.sat_indicator = True
+            self.num_sat_req += 1
+            
     @inheritdoc(DataCollector)
     def server_hit(self, node):
-        if self.hit_indicator is False:
-            self.hit_indicator = True
-            self.num_sat_req += 1
+        if self.server_hit_indicator is False:
+            self.server_hit_indicator = True
             self.server_hits += 1
+            if self.hit_indicator: # there was a cache hit as well
+                self.cache_server_simul_hits += 1
+        if self.sat_indicator is False:
+            self.sat_indicator = True
+            self.num_sat_req += 1
     
     @inheritdoc(DataCollector)
     def results(self):
@@ -320,13 +344,14 @@ class SatisfactionRateCollector(DataCollector):
         results = Tree(**{'MEAN': sat_rate})
         results['MEAN_SERVER_HIT'] = self.server_hits/self.sess_count 
         results['MEAN_CACHE_HIT'] = self.cache_hits/self.sess_count
+        results['MEAN_SERVER_CACHE_HITS'] = self.cache_server_simul_hits/self.sess_count
 
         return results
 
 @register_data_collector('OVERHEAD')
 class OverheadCollector(DataCollector):
-    """Data collector measuring the overhead, i.e., number of data packets
-    forwarded on all links averaged over the number of sessions.
+    """Data collector measuring the overhead, i.e., number of copies of data 
+    packets retrieved for each request (session).
     """
 
     def __init__(self, view):
@@ -340,19 +365,77 @@ class OverheadCollector(DataCollector):
         self.view = view
         self.num_data = 0.0
         self.sess_count = 0
+        self.success_indicator = False
+        self.num_successfull_session = 0.0
+        self.num_trials = 0 # number of off_path trials
+        self.num_successful_trials = 0.0
+        self.num_failed_trials = 0.0
+        self.num_success_first_time = 0.0 # number of sessions where a first attempt to find a content at an off-path trail is successful
+        self.num_trial_sessions = 0.0 # number of sessions where off-path trails are discovered
+        self.session_trials = 0.0
+        self.quota_used_failure = 0.0 # the number of quota used in failed trail discoveries
+        self.quota_used_success = 0.0 # the number of quota used in successful trail discoveries
 
-    @inheritdoc(DataCollector)
-    def content_hop(self, u, v, main_path=True):
-        self.num_data += 1
+    #@inheritdoc(DataCollector)
+    #def content_hop(self, u, v, main_path=True):
+        #self.num_data += 1
 
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
         self.sess_count += 1
+        self.session_trials = 0
+        self.success_indicator = False
     
     @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        if self.session_trials > 0:
+            self.num_trial_sessions += 1
+
+    @inheritdoc(DataCollector)
+    def cache_hit(self, node):
+        self.num_data += 1
+        if not self.success_indicator:
+            self.num_successfull_session += 1
+            self.success_indicator = True
+    
+    @inheritdoc(DataCollector)
+    def offpath_trail(self, quota, success):
+        if self.session_trials == 0 and success:
+            self.num_success_first_time += 1.0
+        self.num_trials += 1.0
+        self.session_trials += 1.0
+        if success:
+            self.num_successful_trials += 1.0
+            self.quota_used_success += quota
+        else:
+            self.num_failed_trials += 1.0
+            self.quota_used_failure += quota
+            
+    @inheritdoc(DataCollector)
+    def server_hit(self, node):
+        self.num_data += 1
+        if not self.success_indicator:
+            self.num_successfull_session += 1
+            self.success_indicator = True
+
+    @inheritdoc(DataCollector)
     def results(self):
-        results = Tree({'MEAN': self.num_data/self.sess_count})
-        
+        results = Tree({'MEAN': self.num_data/self.num_successfull_session})
+        results['QUOTA_USED_SUCCESS'] = 0.0
+        results['QUOTA_USED_FAILURE'] = 0.0
+        results['NUM_SUCCESS_FIRST_TIME'] = 0.0
+        results['SUCCESS_RATE'] = 0.0
+        results['FAILURE_RATE'] = 0.0
+        if self.num_successful_trials > 0:
+            results['QUOTA_USED_SUCCESS'] = self.quota_used_success/self.num_successful_trials
+        if self.num_failed_trials > 0:
+            results['QUOTA_USED_FAILURE'] = self.quota_used_failure/self.num_failed_trials
+        if self.num_trial_sessions > 0:
+            results['NUM_SUCCESS_FIRST_TIME'] = self.num_success_first_time/self.num_trial_sessions
+        if self.num_trials > 0:
+            results['SUCCESS_RATE'] = self.num_successful_trials/self.num_trials
+            results['FAILURE_RATE'] = self.num_failed_trials/self.num_trials
+
         return results
 
 @register_data_collector('LATENCY')
@@ -404,11 +487,11 @@ class LatencyCollector(DataCollector):
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
         if not self.content_recvd:
-            if u is self.source:
+            if u == self.source:
                 self.sess_latency += random.random()*self.server_latency
             else:
                 self.sess_latency += self.view.link_delay(u, v)
-        if v is self.receiver:
+        if v == self.receiver:
             self.content_recvd = True
 
     @inheritdoc(DataCollector)

@@ -57,6 +57,7 @@ def uniform_content_placement(topology, contents, seed=None):
     """
     random.seed(seed)
     source_nodes = get_sources(topology)
+    print "Number of source nodes (candidates for content placement) is: " + repr(len(source_nodes))
     content_placement = collections.defaultdict(set)
     for c in contents:
         content_placement[random.choice(source_nodes)].add(c)
@@ -126,4 +127,3 @@ def lowest_degree_content_placement(topology, contents, seed=None):
     for c in contents:
         content_placement[source_nodes[0]].add(c)
     apply_content_placement(content_placement, topology)
-    

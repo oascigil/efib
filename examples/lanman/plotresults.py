@@ -1018,7 +1018,7 @@ def print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quot
     """
 
     for strategy in strategies:
-        filename = strategy + '_satrate.dat'
+        filename = './Data/' + strategy + '_satrate.dat'
         f = open(filename, 'w')
 
         f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
@@ -1047,7 +1047,7 @@ def print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quo
     """
 
     for strategy in strategies:
-        filename = strategy + '_overhead.dat'
+        filename = './Data/' + strategy + '_overhead.dat'
         f = open(filename, 'w')
 
         f.write('# Average overhead for strategy ' + strategy + '\n')
@@ -1077,7 +1077,7 @@ def print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quot
     """
 
     for strategy in strategies:
-        filename = strategy + '_latency.dat'
+        filename = './Data/' + strategy + '_latency.dat'
         f = open(filename, 'w')
 
         f.write('# Average latency for strategy ' + strategy + '\n')
@@ -1098,6 +1098,35 @@ def print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quot
             f.write('\n')   
         f.close()                   
     
+def print_serverhit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write server hits (off- and on-path) for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = './Data/' + strategy + '_serverhits.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average server hit rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                satrate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                if satrate is not None:
+                    f.write(repr(satrate) + '\t')
+            f.write('\n')   
+        f.close()                   
+
 def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
     """
     Write cache hits (off- and on-path) for different strategies for various probabilities and extra quota values
@@ -1106,7 +1135,7 @@ def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quo
     """
 
     for strategy in strategies:
-        filename = strategy + '_cachehits.dat'
+        filename = './Data/' + strategy + '_cachehits.dat'
         f = open(filename, 'w')
 
         f.write('# Cachehit for strategy ' + strategy + '\n')
@@ -1135,12 +1164,14 @@ def print_first_experiment_data(lst):
     Print Gnuplot data for the first experiments: impact of caching probaility and extra quota on the cache hits, latency, overhead, sat. rate using different strategies.
 
     """
-    strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
-    extra_quotas = [0, 1, 2, 3, 4, 5]
-    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    strategies = ['NDN', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    strategies = ['LIRA_DFIB_OPH']
+    extra_quotas = [1, 2, 3, 4, 5]
+    probabilities = [0.25, 0.5, 0.75, 1.0]
 
     # print cachehit results for each strategy 
     print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+    print_serverhit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
@@ -1150,7 +1181,7 @@ def print_second_experiment_data(lst):
     Print Gnuplot data for the second experiments: impact of DFIB size on cache hits on different strategies
     """
     
-    strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    strategies = ['LIRA_BC', 'LIRA_DFIB_OPH']
     rsn_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
 
     filename = '2_cachehits.dat'
@@ -1322,7 +1353,7 @@ def run(resultsfile, plotdir):
 
     print_first_experiment_data(lst)
     #print_strategies_experiments_gnuplot(lst)
-    #print_second_experiment_data(lst)
+    print_second_experiment_data(lst)
     #plot_third_experiments(resultset, plotdir)
     #print_fourth_experiment_data(lst)
         

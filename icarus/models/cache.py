@@ -795,7 +795,7 @@ class LruCache(Cache):
     @inheritdoc(Cache)
     def has(self, k):
         return k in self._cache
-            
+    
     @inheritdoc(Cache)
     def get(self, k):
         # search content over the list
@@ -1276,7 +1276,7 @@ def rand_insert_cache(cache, p, seed=None):
     return cache
 
 
-def keyval_cache(cache):
+def keyval_cache(cache, size):
     """It modifies the instance of a cache object such that items are saved
     together with a value instead of just a key.
     
@@ -1305,12 +1305,83 @@ def keyval_cache(cache):
     if len(cache) > 0:
         raise ValueError('the cache must be empty')
     cache = copy.deepcopy(cache)
+    print "DFIB size in keyval cache is " + repr(size)
     cache._val = {}
+    n_success = {x:0 for x in range(0, size)}
+    n_lookups = {x:0 for x in range(0, size)}
+    n_quotas = {x:1.0 for x in range(0, size)}
     k_put = cache.put
     k_get = cache.get
+    k_has = cache.has # Onur added this
+    k_position = cache.position # Onur added this
     k_remove = cache.remove
     k_dump = cache.dump
     k_clear = cache.clear
+
+    def get_size():
+        """Return size of the cache
+        """
+        return size
+
+    def position(k):
+        """Return the current position of an item in the cache. Position *0*
+        refers to the head of cache (i.e. most recently used item), while
+        position *maxlen - 1* refers to the tail of the cache (i.e. the least
+        recently used item). 
+
+        This method does not change the internal state of the cache.
+        
+        Parameters
+        ----------
+        k : any hashable type
+            The item looked up in the cache
+            
+        Returns
+        -------
+        position : int
+            The current position of the item in the cache
+        """
+        
+        return k_position(k)
+
+    def get_quota():
+        """Return per-rank quota value
+        """
+        return n_quotas
+
+    def get_nsuccess():
+        """Return per-rank success statistics
+        """
+        return n_success
+
+    def get_nlookups():
+        """Return per-rank lookup statistics
+        """
+        return n_lookups
+
+    def has(k):
+        """Retrieve an item from the cache.
+        
+        Same with *has(k)*, calling this method does not change the internal
+        state of the caching object.
+        
+        Parameters
+        ----------
+        k : any hashable type
+            The item looked up in the cache
+
+        Returns
+        -------
+        v : any hashable type
+            The value of the requested object or *None* if it is not in the
+            cache
+        """
+        
+        if k_has(k):
+            return cache._val[k]
+        else:
+            return None
+        #return cache._val[k] if k_has(k) else None 
     
     def put(k, v):
         """Insert an item in the cache if not already inserted.
@@ -1418,6 +1489,12 @@ def keyval_cache(cache):
     cache.clear = clear
     cache.clear.__doc__ = k_clear.__doc__
     cache.value = value
+    cache.has = has
+    # Onur added the following
+    cache.get_nlookups = get_nlookups
+    cache.get_nsuccess = get_nsuccess
+    cache.get_quota = get_quota
+    cache.get_size = get_size
     
     return cache
     
