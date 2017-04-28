@@ -120,6 +120,26 @@ class NetworkView(object):
         """
         return self.model.link_type[(u, v)]
     
+    def path_delay(self, path):
+        """Return the delay of the given path *path
+
+        Parameters
+        ----------
+        s : any hashable type
+            Origin node
+        t : any hashable type
+            Destination node
+        Returns
+        -------
+        delay : float
+        """
+        delay = 0.0
+        for indx in range(0, len(path)-1):
+            delay += self.link_delay(path[indx], path[indx+1])
+
+        return delay
+
+
     def link_delay(self, u, v):
         """Return the delay of link *(u, v)*.
         

@@ -913,6 +913,88 @@ def printTree(tree, d = 0):
             else:
                 print "\t" * d, key, str(val)
 
+def  print_extra_quota_experiment_data(lst):
+    """
+    Print Gnuplot data for various metrics and Quota-based strategies
+    Extra Quota is the variable in these experiments. 
+    """
+
+    strategies = ['LIRA_DFIB_SC','LIRA_DFIB_OPH']
+    extra_quotas = [1, 2, 3, 4]
+
+    # CacheHits
+    filename = './Data/extra_quota_cachehits.dat'
+    f = open(filename, 'w')
+
+    f.write('# Cachehit for various strategies\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + 'Off' + '\t')
+        f.write(strategy + 'On' + '\t')
+
+    f.write('\n')  
+
+    for extra_quota in extra_quotas:
+        f.write(repr(extra_quota) + '\t')
+        for strategy in strategies:
+            off = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+            on = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+            if on is not None and off is not None:
+                f.write(repr(off) + '\t')
+                f.write(repr(on) + '\t')
+        f.write('\n')   
+    f.close()  
+
+    # Sat. Rates
+    filename = './Data/extra_quota_satrates.dat'
+    f = open(filename, 'w')
+
+    f.write('Sat. Rates for various strategies')
+    f.write('#\n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+        f.write(strategy + '_Overlap' + '\t')
+        f.write(strategy + '_SatRate' + '\t')
+        f.write(strategy + '_CacheHits' + '\t')
+        f.write(strategy + '_ServerHits' + '\t')
+    
+    f.write('\n')   
+    
+    for extra_quota in extra_quotas:
+        f.write(repr(extra_quota) + '\t')
+        for strategy in strategies:
+            sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'SAT_RATE', 'MEAN')
+            cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'SAT_RATE', 'MEAN_CACHE_HIT')
+            server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+            overlap = searchDict(lst, 'strategy', {'name' : strategy, 'p' : 0.25, 'extra_quota' : extra_quota}, 3, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+            if overlap is not None:
+                f.write(repr(overlap) + '\t')
+            if sat_rate is not None:
+                f.write(repr(sat_rate) + '\t')
+            if cache_hits is not None:
+                f.write(repr(cache_hits) + '\t')
+            if server_hits is not None:
+                f.write(repr(server_hits) + '\t')
+        f.write('\n')   
+    f.close()                 
+    
+    # Write Latencies
+    filename = './Data/extra_quota_latency.dat'
+    f = open(filename, 'w')
+    f.write('# Average latency for strategies: NDN, NRR_PROB, and BC\n')
+    f.write('#\n')
+    
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '\t')
+
+    f.write('\n')   
+
+
 def print_strategies_experiments_gnuplot(lst):
     """
     Write cache hits (off- and on-path) for different strategies for various probabilities
@@ -920,8 +1002,8 @@ def print_strategies_experiments_gnuplot(lst):
 
     """
 
-    strategies = ['NDN', 'NRR_PROB', 'LIRA_BC']
-    probabilities = [0.1, 0.25, 0.33, 0.5, 0.66, 0.75, 1.0]
+    strategies = ['NDN', 'LIRA_DFIB_OPH', 'LIRA_BC']
+    probabilities = [0.25, 0.5, 0.75, 1.0]
 
     filename = 'strategies_cachehits.dat'
     f = open(filename, 'w')
@@ -956,15 +1038,28 @@ def print_strategies_experiments_gnuplot(lst):
     f.write('Strategy\t')
     for strategy in strategies:
         f.write(strategy + '\t')
+        f.write(strategy + '_Overlap' + '\t')
+        f.write(strategy + '_SatRate' + '\t')
+        f.write(strategy + '_CacheHits' + '\t')
+        f.write(strategy + '_ServerHits' + '\t')
 
     f.write('\n')   
 
     for probability in probabilities:
         f.write(repr(probability) + '\t')
         for strategy in strategies:
-            satrate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN')
-            if satrate is not None:
-                f.write(repr(satrate) + '\t')
+            sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN')
+            cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN_CACHE_HIT')
+            server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN_SERVER_HIT')
+            overlap = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+            if overlap is not None:
+                f.write(repr(overlap) + '\t')
+            if sat_rate is not None:
+                f.write(repr(sat_rate) + '\t')
+            if cache_hits is not None:
+                f.write(repr(cache_hits) + '\t')
+            if server_hits is not None:
+                f.write(repr(server_hits) + '\t')
         f.write('\n')   
     f.close()                 
 
@@ -998,6 +1093,11 @@ def print_strategies_experiments_gnuplot(lst):
     f.write('Strategy\t')
     for strategy in strategies:
         f.write(strategy + '\t')
+        f.write(strategy + 'QuotaSuccess\t')
+        f.write(strategy + 'QuotaFailure\t')
+        f.write(strategy + 'SuccessRate\t')
+        f.write(strategy + 'FailureRate\t')
+        f.write(strategy + 'FirstTime\t')
 
     f.write('\n')   
 
@@ -1005,23 +1105,32 @@ def print_strategies_experiments_gnuplot(lst):
         f.write(repr(probability) + '\t')
         for strategy in strategies:
             overhead = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'MEAN')
+            quota_success = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'QUOTA_USED_SUCCESS')
+            quota_failure = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'QUOTA_USED_FAILURE')
+            success_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'SUCCESS_RATE')
+            failure_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'FAILURE_RATE')
+            first_time = searchDict(lst, 'strategy', {'name' : strategy, 'p' : probability}, 2, 'OVERHEAD', 'NUM_SUCCESS_FIRST_TIME')
             if overhead is not None:
                 f.write(repr(overhead) + '\t')
+                f.write(repr(quota_success) + '\t')
+                f.write(repr(quota_failure) + '\t')
+                f.write(repr(success_rate) + '\t')
+                f.write(repr(failure_rate) + '\t')
+                f.write(repr(first_time) + '\t')
         f.write('\n')   
     f.close()                   
 
-def print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+def print_server_hit_gnuplot(lst, strategies, probabilities, extra_quotas):
     """
     Write overhead results for different strategies for various probabilities and extra quota values
     to a file in gnuplot format
 
     """
-
     for strategy in strategies:
-        filename = './Data/' + strategy + '_satrate.dat'
+        filename = strategy + '_serverhit.dat'
         f = open(filename, 'w')
 
-        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('# Server hit rate for strategy ' + strategy + '\n')
         f.write('#\n')
     
         f.write('ExtraQuota\t')
@@ -1033,9 +1142,54 @@ def print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quot
         for probability in probabilities:
             f.write(repr(probability) + '\t')
             for extra_quota in extra_quotas:
-                satrate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN')
+                satrate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
                 if satrate is not None:
                     f.write(repr(satrate) + '\t')
+            f.write('\n')   
+
+        f.close()
+
+def print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
+    """
+    Write overhead results for different strategies for various probabilities and extra quota values
+    to a file in gnuplot format
+
+    """
+
+    for strategy in strategies:
+        filename = strategy + '_satrate.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '_Overlap' + '\t')
+            f.write(repr(extra_quota) + '_SatRate' + '\t')
+            f.write(repr(extra_quota) + '_CacheHits' + '\t')
+            f.write(repr(extra_quota) + '_ServerHits' + '\t')
+
+        f.write('\n')   
+
+        for probability in probabilities:
+            f.write(repr(probability) + '\t')
+            for extra_quota in extra_quotas:
+                sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN')
+                cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_CACHE_HIT')
+                server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                overlap = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+                
+                sat_rate -= cache_hits 
+                cache_hits -= overlap
+                if overlap is not None:
+                    f.write(repr(overlap) + '\t')
+                if sat_rate is not None:
+                    f.write(repr(sat_rate) + '\t')
+                if cache_hits is not None:
+                    f.write(repr(cache_hits) + '\t')
+                if server_hits is not None:
+                    f.write(repr(server_hits) + '\t')
             f.write('\n')   
         f.close()                   
 
@@ -1047,7 +1201,7 @@ def print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quo
     """
 
     for strategy in strategies:
-        filename = './Data/' + strategy + '_overhead.dat'
+        filename = strategy + '_overhead.dat'
         f = open(filename, 'w')
 
         f.write('# Average overhead for strategy ' + strategy + '\n')
@@ -1056,6 +1210,11 @@ def print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quo
         f.write('ExtraQuota\t')
         for extra_quota in extra_quotas:
             f.write(repr(extra_quota) + '\t')
+            f.write(repr(extra_quota) + 'QuotaSuccess\t')
+            f.write(repr(extra_quota) + 'QuotaFailure\t')
+            f.write(repr(extra_quota) + 'SuccessRate\t')
+            f.write(repr(extra_quota) + 'FailureRate\t')
+            f.write(repr(extra_quota) + 'FirstTime\t')
 
         f.write('\n')   
 
@@ -1063,8 +1222,18 @@ def print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quo
             f.write(repr(probability) + '\t')
             for extra_quota in extra_quotas:
                 overhead = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'MEAN')
+                quota_success = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'QUOTA_USED_SUCCESS')
+                quota_failure = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'QUOTA_USED_FAILURE')
+                success_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'SUCCESS_RATE')
+                failure_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'FAILURE_RATE')
+                first_time = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'OVERHEAD', 'NUM_SUCCESS_FIRST_TIME')
                 if overhead is not None:
                     f.write(repr(overhead) + '\t')
+                    f.write(repr(quota_success) + '\t')
+                    f.write(repr(quota_failure) + '\t')
+                    f.write(repr(success_rate) + '\t')
+                    f.write(repr(failure_rate) + '\t')
+                    f.write(repr(first_time) + '\t')
             f.write('\n')   
         f.close()                   
     
@@ -1077,7 +1246,7 @@ def print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quot
     """
 
     for strategy in strategies:
-        filename = './Data/' + strategy + '_latency.dat'
+        filename = strategy + '_latency.dat'
         f = open(filename, 'w')
 
         f.write('# Average latency for strategy ' + strategy + '\n')
@@ -1098,35 +1267,6 @@ def print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quot
             f.write('\n')   
         f.close()                   
     
-def print_serverhit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
-    """
-    Write server hits (off- and on-path) for different strategies for various probabilities and extra quota values
-    to a file in gnuplot format
-
-    """
-
-    for strategy in strategies:
-        filename = './Data/' + strategy + '_serverhits.dat'
-        f = open(filename, 'w')
-
-        f.write('# Average server hit rate for strategy ' + strategy + '\n')
-        f.write('#\n')
-    
-        f.write('ExtraQuota\t')
-        for extra_quota in extra_quotas:
-            f.write(repr(extra_quota) + '\t')
-
-        f.write('\n')   
-
-        for probability in probabilities:
-            f.write(repr(probability) + '\t')
-            for extra_quota in extra_quotas:
-                satrate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'p' : probability}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
-                if satrate is not None:
-                    f.write(repr(satrate) + '\t')
-            f.write('\n')   
-        f.close()                   
-
 def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas):
     """
     Write cache hits (off- and on-path) for different strategies for various probabilities and extra quota values
@@ -1135,7 +1275,7 @@ def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quo
     """
 
     for strategy in strategies:
-        filename = './Data/' + strategy + '_cachehits.dat'
+        filename = strategy + '_cachehits.dat'
         f = open(filename, 'w')
 
         f.write('# Cachehit for strategy ' + strategy + '\n')
@@ -1159,35 +1299,462 @@ def print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quo
             f.write('\n')   
         f.close()                   
 
+def print_probability_with_fanout(lst):
+    """
+    Print GnuPlot data for the experiments with varying probability and fan_out for non-Quota-based strategies
+    """
+
+    strategies = ['LIRA_DFIB_SC', 'NDN', 'LIRA_BC']
+    strategies = ['LIRA_DFIB_SC', 'LIRA_BC']
+    caching_probs = [0.25, 0.5, 0.75, 1.0]
+    fan_outs = [1, 2, 3, 4]
+
+    # Cache Hits
+    for strategy in strategies:
+        filename = './Data/' + strategy + '_probs_fanout_cachehits.dat'
+        f = open(filename, 'w')
+
+        f.write('# Cachehit for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('Probability\t')
+        for prob in caching_probs:
+            f.write(repr(prob) + 'Offpath' + '\t')
+            f.write(repr(prob) + 'Onpath' + '\t')
+        
+        f.write('\n')   
+
+        if strategy == 'LIRA_BC' or strategy == 'NDN':
+            f.write(repr(1) + '\t')
+            for prob in caching_probs:
+                off = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+                on = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+                if on is not None and off is not None:
+                    f.write(repr(off) + '\t')
+                    f.write(repr(on) + '\t')
+            f.write('\n')
+
+        else:
+            for fan_out in fan_outs:
+                f.write(repr(fan_out) + '\t')
+                for prob in caching_probs:
+                    off = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+                    on = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+                    if on is not None and off is not None:
+                        f.write(repr(off) + '\t')
+                        f.write(repr(on) + '\t')
+                f.write('\n')
+        f.close()
+
+    # Latency
+    for strategy in strategies:
+        filename = './Data/' + strategy + '_probs_fanout_latency.dat'
+        f = open(filename, 'w')
+        
+        f.write('# Latency for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('Probability\t')
+        for prob in caching_probs:
+            f.write(repr(prob) + '\t')
+        
+        f.write('\n')   
+        
+        if strategy == 'LIRA_BC' or strategy == 'NDN':
+            f.write(repr(1) + '\t')
+            for prob in caching_probs:
+                ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'LATENCY', 'MEAN')
+                if ltncy is not None:
+                    f.write(repr(ltncy) + '\t')
+            f.write('\n')
+        
+        else:
+            for fan_out in fan_outs:
+                f.write(repr(fan_out) + '\t')
+                for prob in caching_probs:
+                    ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'LATENCY', 'MEAN')
+                    if ltncy is not None:
+                        f.write(repr(ltncy) + '\t')
+                f.write('\n')
+        f.close()
+    
+    # Overhead
+    for strategy in strategies:
+        filename = './Data/' + strategy + '_probs_fanout_overhead.dat'
+        f = open(filename, 'w')
+        
+        f.write('# Overhead for strategy ' + strategy + '\n')
+        f.write('#\n')
+        
+        f.write('Probability\t')
+        for prob in caching_probs:
+            f.write(repr(prob) + '\t')
+
+        f.write('\n')  
+
+        if strategy == 'LIRA_BC' or strategy == 'NDN':
+            f.write(repr(1) + '\t')
+            for prob in caching_probs:
+                overhead = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'OVERHEAD', 'MEAN')
+                if overhead is not None:
+                    f.write(repr(overhead) + '\t')
+            f.write('\n')
+        else:
+            for fan_out in fan_outs:
+                f.write(repr(fan_out) + '\t')
+                for prob in caching_probs:
+                    overhead = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'MEAN')
+                    if overhead is not None:
+                        f.write(repr(overhead) + '\t')
+                f.write('\n')
+        f.close()
+
+    # Sat. Rate
+    for strategy in strategies:
+        filename = './Data/' + strategy + '_probs_fanout_satrate.dat'
+        f = open(filename, 'w')
+        
+        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+        
+        if strategy == 'LIRA_BC' or strategy == 'NDN':
+            f.write(repr(1) + '\t')
+            for prob in caching_probs:
+                sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'SAT_RATE', 'MEAN')
+                cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'SAT_RATE', 'MEAN_CACHE_HIT')
+                server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                overlap = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob}, 2, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+                
+                sat_rate -= cache_hits 
+                cache_hits -= overlap
+                if overlap is not None:
+                    f.write(repr(overlap) + '\t')
+                if sat_rate is not None:
+                    f.write(repr(sat_rate) + '\t')
+                if cache_hits is not None:
+                    f.write(repr(cache_hits) + '\t')
+                if server_hits is not None:
+                    f.write(repr(server_hits) + '\t')
+            f.write('\n')   
+        else:
+            for fan_out in fan_outs:
+                f.write(repr(fan_out) + '\t')
+                for prob in caching_probs:
+                    sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN')
+                    cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_CACHE_HIT')
+                    server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                    overlap = searchDict(lst, 'strategy', {'name' : strategy, 'p' : prob, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+                
+                    sat_rate -= cache_hits 
+                    cache_hits -= overlap
+                    if overlap is not None:
+                        f.write(repr(overlap) + '\t')
+                    if sat_rate is not None:
+                        f.write(repr(sat_rate) + '\t')
+                    if cache_hits is not None:
+                        f.write(repr(cache_hits) + '\t')
+                    if server_hits is not None:
+                        f.write(repr(server_hits) + '\t')
+                f.write('\n')   
+        f.close()                   
+
+def print_extra_quota_with_fanout(lst):
+    """
+    Print GnuPlot data for the experiments with varying extra_quota and fan_out for Quota-based strategies
+    """
+
+    strategies = ['LIRA_DFIB_OPH', 'LIRA_DFIB_SC']
+    extra_quotas = [0, 1, 2, 3, 4, 5]
+    fan_outs = [1, 2, 3]
+
+    # Cache Hits
+    for strategy in strategies:
+        filename = strategy + '_fanout_cachehits.dat'
+        f = open(filename, 'w')
+
+        f.write('# Cachehit for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + 'Offpath' + '\t')
+            f.write(repr(extra_quota) + 'Onpath' + '\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for extra_quota in extra_quotas:
+                off = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+                on = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+                if on is not None and off is not None:
+                    f.write(repr(off) + '\t')
+                    f.write(repr(on) + '\t')
+            f.write('\n')
+        f.close()
+    
+    # Latency
+    for strategy in strategies:
+        filename = strategy + '_fanout_latency.dat'
+        f = open(filename, 'w')
+
+        f.write('# Latency for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for extra_quota in extra_quotas:
+                ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'LATENCY', 'MEAN')
+                if ltncy is not None:
+                    f.write(repr(ltncy) + '\t')
+            f.write('\n')
+        f.close()
+
+    # Overhead
+    for strategy in strategies:
+        filename = strategy + '_fanout_overhead.dat'
+        f = open(filename, 'w')
+
+        f.write('# Overhead for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '\t')
+            f.write(repr(extra_quota) + 'QuotaSuccess\t')
+            f.write(repr(extra_quota) + 'QuotaFailure\t')
+            f.write(repr(extra_quota) + 'SuccessRate\t')
+            f.write(repr(extra_quota) + 'FailureRate\t')
+            f.write(repr(extra_quota) + 'FirstTime\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for extra_quota in extra_quotas:
+                overhead = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'MEAN')
+                quota_success = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'QUOTA_USED_SUCCESS')
+                quota_failure = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'QUOTA_USED_FAILURE')
+                success_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'SUCCESS_RATE')
+                failure_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'FAILURE_RATE')
+                first_time = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'NUM_SUCCESS_FIRST_TIME')
+                if overhead is not None:
+                    f.write(repr(overhead) + '\t')
+                    f.write(repr(quota_success) + '\t')
+                    f.write(repr(quota_failure) + '\t')
+                    f.write(repr(success_rate) + '\t')
+                    f.write(repr(failure_rate) + '\t')
+                    f.write(repr(first_time) + '\t')
+            f.write('\n')
+        f.close()
+    
+    # Sat. Rate
+    for strategy in strategies:
+        filename = strategy + '_fanout_satrate.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('ExtraQuota\t')
+        for extra_quota in extra_quotas:
+            f.write(repr(extra_quota) + '_Overlap' + '\t')
+            f.write(repr(extra_quota) + '_SatRate' + '\t')
+            f.write(repr(extra_quota) + '_CacheHits' + '\t')
+            f.write(repr(extra_quota) + '_ServerHits' + '\t')
+
+        f.write('\n')   
+
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for extra_quota in extra_quotas:
+                sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN')
+                cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_CACHE_HIT')
+                server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                overlap = searchDict(lst, 'strategy', {'name' : strategy, 'extra_quota' : extra_quota, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+                
+                sat_rate -= cache_hits 
+                cache_hits -= overlap
+                if overlap is not None:
+                    f.write(repr(overlap) + '\t')
+                if sat_rate is not None:
+                    f.write(repr(sat_rate) + '\t')
+                if cache_hits is not None:
+                    f.write(repr(cache_hits) + '\t')
+                if server_hits is not None:
+                    f.write(repr(server_hits) + '\t')
+            f.write('\n')   
+        f.close()                   
+
+def print_quota_increment_results(lst):
+
+    strategies = ['LIRA_DFIB_OPH']
+    quota_increments = [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0, 2.25, 2.50, 2.75, 3.0]
+    fan_outs = [1, 2]
+
+    # Cache Hits
+    for strategy in strategies:
+        filename = strategy + '_quota_increments_cachehits.dat'
+        f = open(filename, 'w')
+
+        f.write('# Cachehit for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('QuotaIncrements\t')
+        for quota_increment in quota_increments:
+            f.write(repr(quota_increment) + 'Offpath' + '\t')
+            f.write(repr(quota_increment) + 'Onpath' + '\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for quota_increment in quota_increments:
+                off = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_OFF_PATH')
+                on = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'CACHE_HIT_RATIO', 'MEAN_ON_PATH')
+                if on is not None and off is not None:
+                    f.write(repr(off) + '\t')
+                    f.write(repr(on) + '\t')
+            f.write('\n')
+        f.close()
+    
+    # Latency
+    for strategy in strategies:
+        filename = strategy + '_quota_increments_latency.dat'
+        f = open(filename, 'w')
+
+        f.write('# Latency for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('QuotaIncrements\t')
+        for quota_increment in quota_increments:
+            f.write(repr(quota_increment) + '\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for quota_increment in quota_increments:
+                ltncy = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'LATENCY', 'MEAN')
+                if ltncy is not None:
+                    f.write(repr(ltncy) + '\t')
+            f.write('\n')
+        f.close()
+    
+    # Overhead
+    for strategy in strategies:
+        filename = strategy + '_quota_increments_overhead.dat'
+        f = open(filename, 'w')
+
+        f.write('# Overhead for strategy ' + strategy + '\n')
+        f.write('#\n')
+
+        f.write('QuotaIncrements\t')
+        for quota_increment in quota_increments:
+            f.write(repr(quota_increment) + '\t')
+            f.write(repr(quota_increment) + 'QuotaSuccess\t')
+            f.write(repr(quota_increment) + 'QuotaFailure\t')
+            f.write(repr(quota_increment) + 'SuccessRate\t')
+            f.write(repr(quota_increment) + 'FailureRate\t')
+            f.write(repr(quota_increment) + 'FirstTime\t')
+        
+        f.write('\n')   
+        
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for quota_increment in quota_increments:
+                overhead = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'MEAN')
+                quota_success = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'QUOTA_USED_SUCCESS')
+                quota_failure = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'QUOTA_USED_FAILURE')
+                success_rate = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'SUCCESS_RATE')
+                failure_rate = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'FAILURE_RATE')
+                first_time = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'OVERHEAD', 'NUM_SUCCESS_FIRST_TIME')
+                if overhead is not None:
+                    f.write(repr(overhead) + '\t')
+                    f.write(repr(quota_success) + '\t')
+                    f.write(repr(quota_failure) + '\t')
+                    f.write(repr(success_rate) + '\t')
+                    f.write(repr(failure_rate) + '\t')
+                    f.write(repr(first_time) + '\t')
+            f.write('\n')
+        f.close()
+    
+    # Sat. Rate
+    for strategy in strategies:
+        filename = strategy + '_quota_increments_satrate.dat'
+        f = open(filename, 'w')
+
+        f.write('# Average satisfaction rate for strategy ' + strategy + '\n')
+        f.write('#\n')
+    
+        f.write('QuotaIncrements\t')
+        for quota_increment in quota_increments:
+            f.write(repr(quota_increment) + '_Overlap' + '\t')
+            f.write(repr(quota_increment) + '_SatRate' + '\t')
+            f.write(repr(quota_increment) + '_CacheHits' + '\t')
+            f.write(repr(quota_increment) + '_ServerHits' + '\t')
+
+        f.write('\n')   
+
+        for fan_out in fan_outs:
+            f.write(repr(fan_out) + '\t')
+            for quota_increment in quota_increments:
+                sat_rate = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN')
+                cache_hits = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_CACHE_HIT')
+                server_hits = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_HIT')
+                overlap = searchDict(lst, 'strategy', {'name' : strategy, 'quota_increment' : quota_increment, 'fan_out' : fan_out}, 3, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+                
+                sat_rate -= cache_hits 
+                cache_hits -= overlap
+                if overlap is not None:
+                    f.write(repr(overlap) + '\t')
+                if sat_rate is not None:
+                    f.write(repr(sat_rate) + '\t')
+                if cache_hits is not None:
+                    f.write(repr(cache_hits) + '\t')
+                if server_hits is not None:
+                    f.write(repr(server_hits) + '\t')
+            f.write('\n')   
+        f.close()                   
+
+
+
+
 def print_first_experiment_data(lst):
     """
     Print Gnuplot data for the first experiments: impact of caching probaility and extra quota on the cache hits, latency, overhead, sat. rate using different strategies.
-
     """
-    strategies = ['NDN', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
-    strategies = ['LIRA_DFIB_OPH']
+    #strategies = ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']
+    strategies = ['LIRA_DFIB_OPH', 'LIRA_DFIB_SC']
     extra_quotas = [1, 2, 3, 4, 5]
-    probabilities = [0.25, 0.5, 0.75, 1.0]
+    probabilities = [0.25, 0.5, 0.75, 1.0] 
 
     # print cachehit results for each strategy 
     print_cachehit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
-    print_serverhit_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_latency_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_overhead_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
     print_satrate_experiments_gnuplot(lst, strategies, probabilities, extra_quotas)
+    #print_server_hit_gnuplot(lst, strategies, probabilities, extra_quotas)
 
 def print_second_experiment_data(lst):
     """
     Print Gnuplot data for the second experiments: impact of DFIB size on cache hits on different strategies
     """
     
-    strategies = ['LIRA_BC', 'LIRA_DFIB_OPH']
-    rsn_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0]
+    strategies = ['LIRA_DFIB_OPH', 'LIRA_BC', 'LIRA_DFIB_SC']
+    strategies = ['LIRA_BC', 'LIRA_DFIB_SC']
+    rsn_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0]
 
-    filename = '2_cachehits.dat'
+    filename = './Data/2_cachehits.dat'
     f = open(filename, 'w')
 
-    f.write('# Cachehit for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('# Cachehit for various strategies\n')
     f.write('#\n')
     
     f.write('Strategy\t')
@@ -1209,10 +1776,10 @@ def print_second_experiment_data(lst):
     f.close()
 
     # Write Latencies
-    filename = '2_latency.dat'
+    filename = './Data/2_latency.dat'
     f = open(filename, 'w')
 
-    f.write('# Average latency for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('# Average latency for various strategies\n')
     f.write('#\n')
 
     f.write('Strategy\t')
@@ -1231,24 +1798,76 @@ def print_second_experiment_data(lst):
 
     # Write Overhead
 
-    filename = '2_overhead.dat'
+    filename = './Data/2_overhead.dat'
     f = open(filename, 'w')
 
-    f.write('# Average overhead for strategies: DFIB, DFIB_OPH, and DFIB_BC_HYBRID\n')
+    f.write('# Average overhead for various strategies\n')
     f.write('#\n')
 
     f.write('Strategy\t')
     for strategy in strategies:
         f.write(strategy + '\t')
+        f.write(strategy + 'QuotaSuccess\t')
+        f.write(strategy + 'QuotaFailure\t')
+        f.write(strategy + 'SuccessRate\t')
+        f.write(strategy + 'FailureRate\t')
+        f.write(strategy + 'FirstTime\t')
 
     f.write('\n')   
     for rsn_ratio in rsn_ratios:
         f.write(repr(rsn_ratio) + '\t')
         for strategy in strategies:
             overhead = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'MEAN')
+            quota_success = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'QUOTA_USED_SUCCESS')
+            quota_failure = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'QUOTA_USED_FAILURE')
+            success_rate = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'SUCCESS_RATE')
+            failure_rate = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'FAILURE_RATE')
+            first_time = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'OVERHEAD', 'NUM_SUCCESS_FIRST_TIME')
             if overhead is not None:
                 f.write(repr(overhead) + '\t')
+                f.write(repr(quota_success) + '\t')
+                f.write(repr(quota_failure) + '\t')
+                f.write(repr(success_rate) + '\t')
+                f.write(repr(failure_rate) + '\t')
+                f.write(repr(first_time) + '\t')
         f.write('\n')   
+
+    # Write satisfaction
+    filename = './Data/2_satisfaction.dat'
+    f = open(filename, 'w')
+
+    f.write('# Average satisfaction rate for various strategies\n')
+    f.write('# \n')
+
+    f.write('Strategy\t')
+    for strategy in strategies:
+        f.write(strategy + '_Overlap' + '\t')
+        f.write(strategy + '_SatRate' + '\t')
+        f.write(strategy + '_CacheHits' + '\t')
+        f.write(strategy + '_ServerHits' + '\t')
+
+    f.write('\n')   
+    for rsn_ratio in rsn_ratios:
+        f.write(repr(rsn_ratio) + '\t')
+        for strategy in strategies:
+            sat_rate = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'SAT_RATE', 'MEAN')
+            cache_hits = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'SAT_RATE', 'MEAN_CACHE_HIT')  
+            server_hits = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'SAT_RATE', 'MEAN_SERVER_HIT')  
+            overlap = searchDictMultipleCat(lst, ['strategy', 'joint_cache_rsn_placement'], {'name' : strategy, 'rsn_cache_ratio' : rsn_ratio}, 2, 'SAT_RATE', 'MEAN_SERVER_CACHE_HITS')
+            
+            sat_rate -= cache_hits 
+            cache_hits -= overlap
+
+            if overlap is not None:
+                f.write(repr(overlap) + '\t')
+            if sat_rate is not None:
+                f.write(repr(sat_rate) + '\t')
+            if cache_hits is not None:
+                f.write(repr(cache_hits) + '\t')
+            if server_hits is not None:
+                f.write(repr(server_hits) + '\t')
+        f.write('\n')   
+
     f.close()
 
 def plot_third_experiments(resultset, plotdir):
@@ -1351,11 +1970,20 @@ def run(resultsfile, plotdir):
         print 'RESULTS:\n'
         printTree(l[1])
 
-    print_first_experiment_data(lst)
+    #print_second_experiment_data(lst) # DFIB size
+    #print_probability_with_fanout(lst)
+    #print_extra_quota_experiment_data(lst) # Extra quota
+
+
+
+    #print_first_experiment_data(lst)
     #print_strategies_experiments_gnuplot(lst)
-    print_second_experiment_data(lst)
-    #plot_third_experiments(resultset, plotdir)
-    #print_fourth_experiment_data(lst)
+    #print_extra_quota_with_fanout(lst)
+    #print_quota_increment_results(lst)
+
+
+    ###plot_third_experiments(resultset, plotdir)
+    ###print_fourth_experiment_data(lst)
         
     # Create dir if not existsing
     if not os.path.exists(plotdir):

@@ -40,7 +40,7 @@ DATA_COLLECTORS = ['SAT_RATE', 'CACHE_HIT_RATIO', 'LATENCY', 'OVERHEAD']
 WARMUP_STRATEGY = 'LIRA_DFIB_OPH'
 
 #Probability of caching
-CACHING_PROBABILITY = 0.1
+CACHING_PROBABILITY = 0.25
 
 # This is a base experiment configuration with all the parameters that won't
 # change across experiments of the same campaign
@@ -85,119 +85,207 @@ EXPERIMENT_QUEUE = deque()
 
 base = copy.deepcopy(default)
 # Total size of network cache as a fraction of content population
-network_cache = 0.95 # 0.01
+network_cache = 0.30 # 0.95
 base['topology']['name'] = 'ROCKET_FUEL'
 base['topology']['source_ratio'] = 0.1
-base['topology']['ext_delay'] = 5 # 34
+base['topology']['ext_delay'] = 0 # XXX Latency penalty for reaching server is implemented in the LATENCY collector
+base['topology']['asn'] = 3257
 base['joint_cache_rsn_placement'] = {'network_cache': network_cache}
 base['warmup_strategy']['name'] = WARMUP_STRATEGY
-base['warmup_strategy']['p'] = CACHING_PROBABILITY
 
 """
-2. SIT/DFIB size
-"""
+2. Pick optimal TFIB size for TFIB_DC and TFIB_SC
+
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for asn in [3257]:
         for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0]:
-        #for rsn_cache_ratio in [256.0]:
-            for strategy in ['LIRA_DFIB_SC', 'LIRA_BC', 'LIRA_DFIB_OPH']:
-            #for strategy in ['LIRA_DFIB_OPH']:
+            for strategy in ['TFIB_BC', 'TFIB_SC']:
                 experiment = copy.deepcopy(base)
                 experiment['warmup_strategy']['name'] = strategy
+                if strategy is 'TFIB_SC':
+                    experiment['warmup_strategy']['extra_quota'] = 10000
+                    experiment['warmup_strategy']['fan_out'] = 100
                 experiment['topology']['asn'] = asn
                 experiment['strategy']['name'] = strategy
-                experiment['strategy']['p'] = CACHING_PROBABILITY
-                if strategy is 'LIRA_DFIB_OPH': # TODO add LIRA_DFIB
-                    experiment['strategy']['extra_quota'] = 3
-                    experiment['warmup_strategy']['extra_quota'] = 10
-                    experiment['warmup_strategy']['fan_out'] = 100
+                if strategy is 'TFIB_SC': 
+                    experiment['strategy']['extra_quota'] = 1000
+                    experiment['strategy']['fan_out'] = 2
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
                 experiment['joint_cache_rsn_placement']['network_rsn'] = rsn_cache_ratio * network_cache
                 experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = rsn_cache_ratio
                 experiment['desc'] = "RSN size sensitivity -> RSN/cache ratio: %s" % str(rsn_cache_ratio)
                 EXPERIMENT_QUEUE.append(experiment)
 
-
-
-"""
-3. latencyVSfreshness & cachehitsVSfreshness, etc.
 """
 
+"""
+3. Pick optimal network cache size for TFIB_DC and TFIB_SC
+"""
+"""
+for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
+    for strategy in ['TFIB_SC', 'TFIB_DC']:
+        for net_cache in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+            experiment = copy.deepcopy(base)
+            experiment['warmup_strategy']['name'] = strategy
+            experiment['warmup_strategy']['extra_quota'] = 10000
+            experiment['warmup_strategy']['fan_out'] = 10
+            experiment['strategy']['name'] = strategy
+            experiment['strategy']['fan_out'] = 1
+            experiment['strategy']['extra_quota'] = 2
+            experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+            experiment['joint_cache_rsn_placement']['network_rsn'] = 128*net_cache
+            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+            experiment['joint_cache_rsn_placement']['network_cache'] =  net_cache
+            experiment['desc'] = "strategy network_cache: %s" % str(net_cache)
+            EXPERIMENT_QUEUE.append(experiment)
+"""
+
+"""
+1. Compare strategies as initial results
+
+for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
+    #for strategy in ['TFIB_SC', 'NDN_PROB', 'TFIB_BC', 'NRR_PROB']:
+    for strategy in ['TFIB_SC']:
+        for net_cache in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+            if strategy == 'TFIB_SC':
+                experiment = copy.deepcopy(base)
+                experiment['warmup_strategy']['name'] = strategy
+                experiment['warmup_strategy']['extra_quota'] = 10000
+                experiment['warmup_strategy']['fan_out'] = 10
+                experiment['strategy']['name'] = strategy
+                experiment['strategy']['fan_out'] = 2
+                experiment['strategy']['extra_quota'] = 10000
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 128*net_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+                experiment['joint_cache_rsn_placement']['network_cache'] =  net_cache
+                experiment['desc'] = "strategy network_cache: %s" % str(net_cache)
+                EXPERIMENT_QUEUE.append(experiment)
+            else:
+                experiment = copy.deepcopy(base)
+                experiment['warmup_strategy']['name'] = strategy
+                experiment['strategy']['name'] = strategy
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 128 * net_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+                experiment['joint_cache_rsn_placement']['network_cache'] =  net_cache
+                experiment['desc'] = "strategy network_cache: %s" % str(net_cache)
+                EXPERIMENT_QUEUE.append(experiment)
+"""
+
+"""
+2. Pick optimal TFIB size
+"""
 """
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
     for asn in [3257]:
-        for fresh_interval in [10.0, 30.0, 60.0, 120.0, 180.0, 240.0, 300.0, 600.0, 1200.0]:
-                experiment = copy.deepcopy(base)
-                experiment['topology']['asn'] = asn
-                experiment['strategy']['name'] = 'LIRA_BC_HYBRID'
-                experiment['strategy']['p'] = CACHING_PROBABILITY
-                experiment['strategy']['rsn_fresh'] = fresh_interval
-                experiment['strategy']['extra_quota'] = 3
-                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-                experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-                experiment['desc'] = "RSN fresh_interval: %s" % str(fresh_interval)
-                EXPERIMENT_QUEUE.append(experiment)
-"""
-
-"""
-1. Extra Quota with Probability
-"""
-
-for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for strategy in ['LIRA_DFIB_OPH', 'LIRA_DFIB_SC']:    
-        for caching_probability in [0.25, 0.5, 0.75, 1.0]:
-            for extra_quota in [1, 2, 3, 4, 5]:
+        for rsn_cache_ratio in [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0]:
+            for strategy in ['TFIB_DC', 'TFIB_SC']:
                 experiment = copy.deepcopy(base)
                 experiment['warmup_strategy']['name'] = strategy
-                experiment['warmup_strategy']['extra_quota'] = 10
-                experiment['warmup_strategy']['fan_out'] = 100
-                experiment['topology']['asn'] = 3257 #3967
+                experiment['warmup_strategy']['extra_quota'] = 10000
+                experiment['warmup_strategy']['fan_out'] = 10
+                experiment['topology']['asn'] = asn
                 experiment['strategy']['name'] = strategy
-                #experiment['strategy']['rsn_fresh'] = 5.0
-                experiment['strategy']['p'] = caching_probability 
-                experiment['strategy']['extra_quota'] = extra_quota
+                experiment['strategy']['extra_quota'] = 2
+                experiment['strategy']['fan_out'] = 1
                 experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-                experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-                experiment['desc'] = "caching probability: %s" % str(caching_probability)
+                experiment['joint_cache_rsn_placement']['network_rsn'] = rsn_cache_ratio * network_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = rsn_cache_ratio
+                experiment['desc'] = "RSN size sensitivity -> RSN/cache ratio: %s" % str(rsn_cache_ratio)
                 EXPERIMENT_QUEUE.append(experiment)
+"""
 
+"""
+# Compare dynamic and static cost TFIB strategies
+"""
+
+"""
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for strategy in ['LIRA_BC', 'NDN', 'LIRA_DFIB_OPH']:    
-        for caching_probability in [0.25, 0.5, 0.75, 1.0]:
+    for strategy in ['TFIB_DC', 'TFIB_SC']:
+        for extra_quota in [1, 2, 3, 4]:
             experiment = copy.deepcopy(base)
-            if strategy is 'LIRA_DFIB_OPH':
-                experiment['strategy']['extra_quota'] = 3
-                experiment['warmup_strategy']['extra_quota'] = 10
-                experiment['warmup_strategy']['fan_out'] = 100
+            experiment['warmup_strategy']['name'] = strategy
+            experiment['warmup_strategy']['extra_quota'] = 1000000
+            experiment['warmup_strategy']['fan_out'] = 10
+            experiment['strategy']['extra_quota'] = extra_quota
+            experiment['strategy']['fan_out'] = 1
             experiment['topology']['asn'] = 3257 #3967
             experiment['strategy']['name'] = strategy
-            experiment['warmup_strategy']['name'] = strategy
-            #experiment['strategy']['rsn_fresh'] = 5.0
-            experiment['strategy']['p'] = caching_probability 
+            #TODO add quota increment default value of 1
             experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-            experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-            experiment['desc'] = "caching probability: %s" % str(caching_probability)
+            experiment['joint_cache_rsn_placement']['network_rsn'] = 128 * network_cache
+            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+            experiment['desc'] = "extra_quota: %s" % str(extra_quota)
             EXPERIMENT_QUEUE.append(experiment)
+#"""
 
-
-"""
-4th Experiments: Expiration time experiments
-"""
-"""
+#"""
 for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
-    for strategy in ['LIRA_DFIB', 'LIRA_DFIB_OPH', 'LIRA_BC_HYBRID']:    
-        for timeout in [5.0, 10.0, 30.0, 60.0, 120.0, 240.0, 360.0, 600.0, 1200.0, 3600.0, 7200.0]:
+    for strategy in ['TFIB_DC']:
+        for quota_increment in [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0, 2.25, 2.50, 2.75, 3.0]:
             experiment = copy.deepcopy(base)
-            experiment['topology']['asn'] = 3257
+            experiment['warmup_strategy']['name'] = strategy
+            experiment['warmup_strategy']['extra_quota'] = 1000000
+            experiment['warmup_strategy']['fan_out'] = 10
+            experiment['topology']['asn'] = 3257 #3967
             experiment['strategy']['name'] = strategy
-            experiment['strategy']['p'] = CACHING_PROBABILITY
-            experiment['strategy']['rsn_timeout'] = timeout 
+            #experiment['strategy']['rsn_fresh'] = 5.0
+            experiment['strategy']['extra_quota'] = 2
+            experiment['strategy']['fan_out'] = 1
+            experiment['strategy']['quota_increment'] = quota_increment
             experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
-            experiment['joint_cache_rsn_placement']['network_rsn'] = 64* network_cache
-            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 64
-            experiment['desc'] = "impact of timeout"
+            experiment['joint_cache_rsn_placement']['network_rsn'] = 128* network_cache
+            experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+            experiment['desc'] = "quota_increment: %s" % str(quota_increment)
             EXPERIMENT_QUEUE.append(experiment)
+#"""
+"""
+Zipf Tests
+"""
+"""
+
+for joint_cache_rsn_placement in ['CACHE_ALL_RSN_ALL']:
+    #for strategy in ['TFIB_SC', 'NDN_PROB', 'TFIB_BC', 'NRR_PROB', 'TFIB_DC']:
+    #for strategy in ['TFIB_SC', 'TFIB_DC']:
+    for strategy in ['NRR_PROB']:
+        for zipf in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+            if strategy == 'TFIB_SC':
+                experiment = copy.deepcopy(base)
+                experiment['warmup_strategy']['name'] = strategy
+                experiment['warmup_strategy']['extra_quota'] = 10000
+                experiment['warmup_strategy']['fan_out'] = 10
+                experiment['strategy']['name'] = strategy
+                experiment['strategy']['fan_out'] = 1
+                experiment['strategy']['extra_quota'] = 1
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 128*network_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+                experiment['workload']['alpha'] = zipf
+                experiment['desc'] = "strategy zipf: %s" % str(zipf)
+                EXPERIMENT_QUEUE.append(experiment)
+            elif strategy == 'TFIB_DC':
+                experiment = copy.deepcopy(base)
+                experiment['warmup_strategy']['name'] = strategy
+                experiment['warmup_strategy']['extra_quota'] = 10000
+                experiment['warmup_strategy']['fan_out'] = 10
+                experiment['strategy']['name'] = strategy
+                experiment['strategy']['fan_out'] = 1
+                experiment['strategy']['extra_quota'] = 1
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 128*network_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+                experiment['workload']['alpha'] = zipf
+                experiment['desc'] = "strategy zipf: %s" % str(zipf)
+                EXPERIMENT_QUEUE.append(experiment)
+            else:
+                experiment = copy.deepcopy(base)
+                experiment['warmup_strategy']['name'] = strategy
+                experiment['strategy']['name'] = strategy
+                experiment['joint_cache_rsn_placement']['name'] = joint_cache_rsn_placement
+                experiment['joint_cache_rsn_placement']['network_rsn'] = 128 * network_cache
+                experiment['joint_cache_rsn_placement']['rsn_cache_ratio'] = 128
+                experiment['workload']['alpha'] = zipf
+                experiment['desc'] = "strategy zipf: %s" % str(zipf)
+                EXPERIMENT_QUEUE.append(experiment)
 """

@@ -321,8 +321,6 @@ class SatisfactionRateCollector(DataCollector):
         if self.hit_indicator is False:
             self.hit_indicator = True
             self.cache_hits += 1
-            if self.server_hit_indicator: # there was a server hit as well
-                self.cache_server_simul_hits += 1
         if self.sat_indicator is False:  
             self.sat_indicator = True
             self.num_sat_req += 1
@@ -332,11 +330,14 @@ class SatisfactionRateCollector(DataCollector):
         if self.server_hit_indicator is False:
             self.server_hit_indicator = True
             self.server_hits += 1
-            if self.hit_indicator: # there was a cache hit as well
-                self.cache_server_simul_hits += 1
         if self.sat_indicator is False:
             self.sat_indicator = True
             self.num_sat_req += 1
+    
+    @inheritdoc(DataCollector)
+    def end_session(self, success=True):
+        if self.hit_indicator and self.server_hit_indicator:
+            self.cache_server_simul_hits += 1
     
     @inheritdoc(DataCollector)
     def results(self):
@@ -365,6 +366,7 @@ class OverheadCollector(DataCollector):
         self.view = view
         self.num_data = 0.0
         self.sess_count = 0
+        self.interest_hops = 0.0
         self.success_indicator = False
         self.num_successfull_session = 0.0
         self.num_trials = 0 # number of off_path trials
@@ -390,6 +392,10 @@ class OverheadCollector(DataCollector):
     def end_session(self, success=True):
         if self.session_trials > 0:
             self.num_trial_sessions += 1
+
+    @inheritdoc(DataCollector)
+    def request_hop(self, u, v, main_path=True):
+        self.interest_hops += 1
 
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
@@ -421,6 +427,7 @@ class OverheadCollector(DataCollector):
     @inheritdoc(DataCollector)
     def results(self):
         results = Tree({'MEAN': self.num_data/self.num_successfull_session})
+        results['INTEREST_HOPS'] = self.interest_hops/self.num_successfull_session
         results['QUOTA_USED_SUCCESS'] = 0.0
         results['QUOTA_USED_FAILURE'] = 0.0
         results['NUM_SUCCESS_FIRST_TIME'] = 0.0
@@ -459,7 +466,7 @@ class LatencyCollector(DataCollector):
         self.req_latency = 0.0
         self.sess_count = 0
         self.latency = 0.0
-        self.server_latency = 100 # Additional max. latency (penalty) for retrieving content from server 
+        self.server_latency = 50 # Additional max. latency (penalty) for retrieving content from server 
         self.hit_indicator = False
         self.content_recvd = False # indicator set to True when receiver gets the content
         if cdf:
@@ -488,7 +495,7 @@ class LatencyCollector(DataCollector):
     def content_hop(self, u, v, main_path=True):
         if not self.content_recvd:
             if u == self.source:
-                self.sess_latency += random.random()*self.server_latency
+                self.sess_latency += 55
             else:
                 self.sess_latency += self.view.link_delay(u, v)
         if v == self.receiver:
