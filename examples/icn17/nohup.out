@@ -1,0 +1,1294 @@
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+RESULTS_FILE=${CURR_DIR}/results.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+Run experiments
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[00:24:42 2016-10-01|INFO|main] Launching orchestrator
+[00:24:42 2016-10-01|INFO|orchestration] Starting simulations: 42 experiments, 10 process(es)
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-4] Experiment 4/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-4] Experiment 4/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-5] Experiment 5/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-5] Experiment 5/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-2] Experiment 2/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-2] Experiment 2/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-7] Experiment 7/42 | Preparing scenario: caching probability: 0.25
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-7] Experiment 7/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-8] Experiment 8/42 | Preparing scenario: caching probability: 0.25
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-8] Experiment 8/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-9] Experiment 9/42 | Preparing scenario: caching probability: 0.25
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-9] Experiment 9/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-6] Experiment 6/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-6] Experiment 6/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-1] Experiment 1/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-1] Experiment 1/42 | Start simulation
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-3] Experiment 3/42 | Preparing scenario: caching probability: 0.1
+[00:24:42 2016-10-01|INFO|runner-PoolWorker-3] Experiment 3/42 | Start simulation
+[00:24:43 2016-10-01|INFO|runner-PoolWorker-10] Experiment 10/42 | Preparing scenario: caching probability: 0.25
+[00:24:43 2016-10-01|INFO|runner-PoolWorker-10] Experiment 10/42 | Start simulation
+[00:32:47 2016-10-01|INFO|runner-PoolWorker-1] Experiment 1/42 | End simulation | Duration 8m 5s.
+[00:32:47 2016-10-01|INFO|runner-PoolWorker-1] Experiment 11/42 | Preparing scenario: caching probability: 0.25
+[00:32:47 2016-10-01|INFO|runner-PoolWorker-1] Experiment 11/42 | Start simulation
+[00:33:02 2016-10-01|INFO|runner-PoolWorker-7] Experiment 7/42 | End simulation | Duration 8m 20s.
+[00:33:02 2016-10-01|INFO|runner-PoolWorker-7] Experiment 12/42 | Preparing scenario: caching probability: 0.25
+[00:33:02 2016-10-01|INFO|runner-PoolWorker-7] Experiment 12/42 | Start simulation
+[00:35:07 2016-10-01|INFO|runner-PoolWorker-2] Experiment 2/42 | End simulation | Duration 10m 25s.
+[00:35:07 2016-10-01|INFO|runner-PoolWorker-2] Experiment 13/42 | Preparing scenario: caching probability: 0.33
+[00:35:07 2016-10-01|INFO|runner-PoolWorker-2] Experiment 13/42 | Start simulation
+[00:35:24 2016-10-01|INFO|runner-PoolWorker-8] Experiment 8/42 | End simulation | Duration 10m 42s.
+[00:35:24 2016-10-01|INFO|orchestration] SUMMARY | Completed: 4, Failed: 0, Scheduled: 38, ETA: 35m
+[00:35:24 2016-10-01|INFO|runner-PoolWorker-8] Experiment 14/42 | Preparing scenario: caching probability: 0.33
+[00:35:24 2016-10-01|INFO|runner-PoolWorker-8] Experiment 14/42 | Start simulation
+[00:35:44 2016-10-01|INFO|runner-PoolWorker-3] Experiment 3/42 | End simulation | Duration 11m 2s.
+[00:35:44 2016-10-01|INFO|runner-PoolWorker-3] Experiment 15/42 | Preparing scenario: caching probability: 0.33
+[00:35:44 2016-10-01|INFO|runner-PoolWorker-3] Experiment 15/42 | Start simulation
+[00:35:57 2016-10-01|INFO|runner-PoolWorker-4] Experiment 4/42 | End simulation | Duration 11m 15s.
+[00:35:58 2016-10-01|INFO|runner-PoolWorker-4] Experiment 16/42 | Preparing scenario: caching probability: 0.33
+[00:35:58 2016-10-01|INFO|runner-PoolWorker-4] Experiment 16/42 | Start simulation
+[00:36:00 2016-10-01|INFO|runner-PoolWorker-6] Experiment 6/42 | End simulation | Duration 11m 18s.
+[00:36:01 2016-10-01|INFO|runner-PoolWorker-6] Experiment 17/42 | Preparing scenario: caching probability: 0.33
+[00:36:01 2016-10-01|INFO|runner-PoolWorker-6] Experiment 17/42 | Start simulation
+[00:36:08 2016-10-01|INFO|runner-PoolWorker-5] Experiment 5/42 | End simulation | Duration 11m 26s.
+[00:36:08 2016-10-01|INFO|orchestration] SUMMARY | Completed: 8, Failed: 0, Scheduled: 34, ETA: 35m
+[00:36:08 2016-10-01|INFO|runner-PoolWorker-5] Experiment 18/42 | Preparing scenario: caching probability: 0.33
+[00:36:08 2016-10-01|INFO|runner-PoolWorker-5] Experiment 18/42 | Start simulation
+[00:36:14 2016-10-01|INFO|runner-PoolWorker-9] Experiment 9/42 | End simulation | Duration 11m 32s.
+[00:36:14 2016-10-01|INFO|runner-PoolWorker-9] Experiment 19/42 | Preparing scenario: caching probability: 0.5
+[00:36:14 2016-10-01|INFO|runner-PoolWorker-9] Experiment 19/42 | Start simulation
+[00:36:20 2016-10-01|INFO|runner-PoolWorker-10] Experiment 10/42 | End simulation | Duration 11m 38s.
+[00:36:24 2016-10-01|INFO|runner-PoolWorker-10] Experiment 20/42 | Preparing scenario: caching probability: 0.5
+[00:36:24 2016-10-01|INFO|runner-PoolWorker-10] Experiment 20/42 | Start simulation
+[00:43:32 2016-10-01|INFO|runner-PoolWorker-2] Experiment 13/42 | End simulation | Duration 8m 25s.
+[00:43:33 2016-10-01|INFO|runner-PoolWorker-2] Experiment 21/42 | Preparing scenario: caching probability: 0.5
+[00:43:33 2016-10-01|INFO|runner-PoolWorker-2] Experiment 21/42 | Start simulation
+[00:44:29 2016-10-01|INFO|runner-PoolWorker-1] Experiment 11/42 | End simulation | Duration 11m 42s.
+[00:44:29 2016-10-01|INFO|orchestration] SUMMARY | Completed: 12, Failed: 0, Scheduled: 30, ETA: 31m
+[00:44:29 2016-10-01|INFO|runner-PoolWorker-1] Experiment 22/42 | Preparing scenario: caching probability: 0.5
+[00:44:29 2016-10-01|INFO|runner-PoolWorker-1] Experiment 22/42 | Start simulation
+[00:44:53 2016-10-01|INFO|runner-PoolWorker-7] Experiment 12/42 | End simulation | Duration 11m 51s.
+[00:44:53 2016-10-01|INFO|runner-PoolWorker-7] Experiment 23/42 | Preparing scenario: caching probability: 0.5
+[00:44:53 2016-10-01|INFO|runner-PoolWorker-7] Experiment 23/42 | Start simulation
+[00:44:56 2016-10-01|INFO|runner-PoolWorker-9] Experiment 19/42 | End simulation | Duration 8m 42s.
+[00:44:57 2016-10-01|INFO|runner-PoolWorker-9] Experiment 24/42 | Preparing scenario: caching probability: 0.5
+[00:44:57 2016-10-01|INFO|runner-PoolWorker-9] Experiment 24/42 | Start simulation
+[00:46:14 2016-10-01|INFO|runner-PoolWorker-8] Experiment 14/42 | End simulation | Duration 10m 51s.
+[00:46:15 2016-10-01|INFO|runner-PoolWorker-8] Experiment 25/42 | Preparing scenario: caching probability: 0.66
+[00:46:15 2016-10-01|INFO|runner-PoolWorker-8] Experiment 25/42 | Start simulation
+[00:47:11 2016-10-01|INFO|runner-PoolWorker-3] Experiment 15/42 | End simulation | Duration 11m 27s.
+[00:47:11 2016-10-01|INFO|orchestration] SUMMARY | Completed: 16, Failed: 0, Scheduled: 26, ETA: 27m
+[00:47:11 2016-10-01|INFO|runner-PoolWorker-3] Experiment 26/42 | Preparing scenario: caching probability: 0.66
+[00:47:11 2016-10-01|INFO|runner-PoolWorker-3] Experiment 26/42 | Start simulation
+[00:47:22 2016-10-01|INFO|runner-PoolWorker-10] Experiment 20/42 | End simulation | Duration 11m 1s.
+[00:47:22 2016-10-01|INFO|runner-PoolWorker-10] Experiment 27/42 | Preparing scenario: caching probability: 0.66
+[00:47:22 2016-10-01|INFO|runner-PoolWorker-10] Experiment 27/42 | Start simulation
+[00:47:41 2016-10-01|INFO|runner-PoolWorker-6] Experiment 17/42 | End simulation | Duration 11m 40s.
+[00:47:41 2016-10-01|INFO|runner-PoolWorker-6] Experiment 28/42 | Preparing scenario: caching probability: 0.66
+[00:47:41 2016-10-01|INFO|runner-PoolWorker-6] Experiment 28/42 | Start simulation
+[00:47:46 2016-10-01|INFO|runner-PoolWorker-4] Experiment 16/42 | End simulation | Duration 11m 49s.
+[00:47:46 2016-10-01|INFO|runner-PoolWorker-4] Experiment 29/42 | Preparing scenario: caching probability: 0.66
+[00:47:46 2016-10-01|INFO|runner-PoolWorker-4] Experiment 29/42 | Start simulation
+[00:48:04 2016-10-01|INFO|runner-PoolWorker-5] Experiment 18/42 | End simulation | Duration 11m 57s.
+[00:48:04 2016-10-01|INFO|orchestration] SUMMARY | Completed: 20, Failed: 0, Scheduled: 22, ETA: 23m
+[00:48:05 2016-10-01|INFO|runner-PoolWorker-5] Experiment 30/42 | Preparing scenario: caching probability: 0.66
+[00:48:05 2016-10-01|INFO|runner-PoolWorker-5] Experiment 30/42 | Start simulation
+[00:55:12 2016-10-01|INFO|runner-PoolWorker-8] Experiment 25/42 | End simulation | Duration 8m 57s.
+[00:55:12 2016-10-01|INFO|runner-PoolWorker-8] Experiment 31/42 | Preparing scenario: caching probability: 0.75
+[00:55:12 2016-10-01|INFO|runner-PoolWorker-8] Experiment 31/42 | Start simulation
+[00:55:16 2016-10-01|INFO|runner-PoolWorker-2] Experiment 21/42 | End simulation | Duration 11m 43s.
+[00:55:16 2016-10-01|INFO|runner-PoolWorker-2] Experiment 32/42 | Preparing scenario: caching probability: 0.75
+[00:55:16 2016-10-01|INFO|runner-PoolWorker-2] Experiment 32/42 | Start simulation
+[00:55:55 2016-10-01|INFO|runner-PoolWorker-1] Experiment 22/42 | End simulation | Duration 11m 26s.
+[00:55:55 2016-10-01|INFO|runner-PoolWorker-1] Experiment 33/42 | Preparing scenario: caching probability: 0.75
+[00:55:55 2016-10-01|INFO|runner-PoolWorker-1] Experiment 33/42 | Start simulation
+[00:56:51 2016-10-01|INFO|runner-PoolWorker-9] Experiment 24/42 | End simulation | Duration 11m 54s.
+[00:56:51 2016-10-01|INFO|orchestration] SUMMARY | Completed: 24, Failed: 0, Scheduled: 18, ETA: 19m
+[00:56:51 2016-10-01|INFO|runner-PoolWorker-9] Experiment 34/42 | Preparing scenario: caching probability: 0.75
+[00:56:51 2016-10-01|INFO|runner-PoolWorker-9] Experiment 34/42 | Start simulation
+[00:57:11 2016-10-01|INFO|runner-PoolWorker-7] Experiment 23/42 | End simulation | Duration 12m 18s.
+[00:57:12 2016-10-01|INFO|runner-PoolWorker-7] Experiment 35/42 | Preparing scenario: caching probability: 0.75
+[00:57:12 2016-10-01|INFO|runner-PoolWorker-7] Experiment 35/42 | Start simulation
+[00:58:19 2016-10-01|INFO|runner-PoolWorker-3] Experiment 26/42 | End simulation | Duration 11m 9s.
+[00:58:20 2016-10-01|INFO|runner-PoolWorker-3] Experiment 36/42 | Preparing scenario: caching probability: 0.75
+[00:58:20 2016-10-01|INFO|runner-PoolWorker-3] Experiment 36/42 | Start simulation
+[00:59:27 2016-10-01|INFO|runner-PoolWorker-10] Experiment 27/42 | End simulation | Duration 12m 6s.
+[00:59:28 2016-10-01|INFO|runner-PoolWorker-10] Experiment 37/42 | Preparing scenario: caching probability: 1.0
+[00:59:28 2016-10-01|INFO|runner-PoolWorker-10] Experiment 37/42 | Start simulation
+[00:59:42 2016-10-01|INFO|runner-PoolWorker-6] Experiment 28/42 | End simulation | Duration 12m 1s.
+[00:59:42 2016-10-01|INFO|orchestration] SUMMARY | Completed: 28, Failed: 0, Scheduled: 14, ETA: 15m
+[00:59:42 2016-10-01|INFO|runner-PoolWorker-6] Experiment 38/42 | Preparing scenario: caching probability: 1.0
+[00:59:42 2016-10-01|INFO|runner-PoolWorker-6] Experiment 38/42 | Start simulation
+[01:00:12 2016-10-01|INFO|runner-PoolWorker-4] Experiment 29/42 | End simulation | Duration 12m 26s.
+[01:00:12 2016-10-01|INFO|runner-PoolWorker-4] Experiment 39/42 | Preparing scenario: caching probability: 1.0
+[01:00:12 2016-10-01|INFO|runner-PoolWorker-4] Experiment 39/42 | Start simulation
+[01:00:26 2016-10-01|INFO|runner-PoolWorker-5] Experiment 30/42 | End simulation | Duration 12m 21s.
+[01:00:26 2016-10-01|INFO|runner-PoolWorker-5] Experiment 40/42 | Preparing scenario: caching probability: 1.0
+[01:00:26 2016-10-01|INFO|runner-PoolWorker-5] Experiment 40/42 | Start simulation
+[01:04:01 2016-10-01|INFO|runner-PoolWorker-8] Experiment 31/42 | End simulation | Duration 8m 50s.
+[01:04:01 2016-10-01|INFO|runner-PoolWorker-8] Experiment 41/42 | Preparing scenario: caching probability: 1.0
+[01:04:01 2016-10-01|INFO|runner-PoolWorker-8] Experiment 41/42 | Start simulation
+[01:05:48 2016-10-01|INFO|runner-PoolWorker-2] Experiment 32/42 | End simulation | Duration 10m 32s.
+[01:05:48 2016-10-01|INFO|orchestration] SUMMARY | Completed: 32, Failed: 0, Scheduled: 10, ETA: 11m
+[01:05:50 2016-10-01|INFO|runner-PoolWorker-2] Experiment 42/42 | Preparing scenario: caching probability: 1.0
+[01:05:50 2016-10-01|INFO|runner-PoolWorker-2] Experiment 42/42 | Start simulation
+[01:07:38 2016-10-01|INFO|runner-PoolWorker-1] Experiment 33/42 | End simulation | Duration 11m 43s.
+[01:08:24 2016-10-01|INFO|runner-PoolWorker-10] Experiment 37/42 | End simulation | Duration 8m 57s.
+[01:08:58 2016-10-01|INFO|runner-PoolWorker-9] Experiment 34/42 | End simulation | Duration 12m 7s.
+[01:09:41 2016-10-01|INFO|runner-PoolWorker-7] Experiment 35/42 | End simulation | Duration 12m 30s.
+[01:09:41 2016-10-01|INFO|orchestration] SUMMARY | Completed: 36, Failed: 0, Scheduled: 6, ETA: 6m
+[01:10:29 2016-10-01|INFO|runner-PoolWorker-3] Experiment 36/42 | End simulation | Duration 12m 10s.
+[01:11:04 2016-10-01|INFO|runner-PoolWorker-6] Experiment 38/42 | End simulation | Duration 11m 22s.
+[01:12:32 2016-10-01|INFO|runner-PoolWorker-4] Experiment 39/42 | End simulation | Duration 12m 21s.
+[01:12:52 2016-10-01|INFO|runner-PoolWorker-5] Experiment 40/42 | End simulation | Duration 12m 26s.
+[01:12:52 2016-10-01|INFO|orchestration] SUMMARY | Completed: 40, Failed: 0, Scheduled: 2, ETA: 2m
+[01:16:28 2016-10-01|INFO|runner-PoolWorker-8] Experiment 41/42 | End simulation | Duration 12m 27s.
+[01:17:42 2016-10-01|INFO|runner-PoolWorker-2] Experiment 42/42 | End simulation | Duration 11m 55s.
+[01:17:45 2016-10-01|INFO|orchestration] END | Planned: 42, Completed: 42, Succeeded: 42, Failed: 0
+[01:17:45 2016-10-01|INFO|main] Orchestrator finished
+[01:17:45 2016-10-01|INFO|main] Saved results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results.pickle
+
+# Plot results
+echo "Plot results"
+Plot results
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 660
+    """
+      ^
+IndentationError: expected an indented block
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+RESULTS_FILE=${CURR_DIR}/results.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+Run experiments
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[12:13:24 2016-10-03|INFO|main] Launching orchestrator
+[12:13:24 2016-10-03|INFO|orchestration] Starting simulations: 7 experiments, 10 process(es)
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | Preparing scenario: caching probability: 1.0
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | Preparing scenario: caching probability: 0.66
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | Preparing scenario: caching probability: 0.33
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | Preparing scenario: caching probability: 0.5
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | Preparing scenario: caching probability: 0.1
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | Preparing scenario: caching probability: 0.75
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | Start simulation
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | Preparing scenario: caching probability: 0.25
+[12:13:24 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | Start simulation
+[12:24:14 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | End simulation | Duration 10m 51s.
+[12:24:46 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | End simulation | Duration 11m 22s.
+[12:24:48 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | End simulation | Duration 11m 24s.
+[12:25:06 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | End simulation | Duration 11m 43s.
+[12:25:06 2016-10-03|INFO|orchestration] SUMMARY | Completed: 4, Failed: 0, Scheduled: 3, ETA: 3m
+[12:25:29 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | End simulation | Duration 12m 6s.
+[12:25:37 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | End simulation | Duration 12m 13s.
+[12:25:56 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | End simulation | Duration 12m 32s.
+[12:25:59 2016-10-03|INFO|orchestration] END | Planned: 7, Completed: 7, Succeeded: 7, Failed: 0
+[12:25:59 2016-10-03|INFO|main] Orchestrator finished
+[12:26:00 2016-10-03|INFO|main] Saved results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results.pickle
+
+# Plot results
+echo "Plot results"
+Plot results
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.1
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.1
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.585745555556
+	MEAN_SERVER_HIT 0.413401111111
+	MEAN 0.999146666667
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.304705854688
+	MEAN_ON_PATH 0.281039700868
+	MEAN 0.585745555556
+ OVERHEAD
+	MEAN 6.72364055556
+ LATENCY
+	MEAN 62.8980963224
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.25
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.25
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.593077222222
+	MEAN_SERVER_HIT 0.406044166667
+	MEAN 0.999121388889
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.31447267639
+	MEAN_ON_PATH 0.278604545833
+	MEAN 0.593077222222
+ OVERHEAD
+	MEAN 6.88998972222
+ LATENCY
+	MEAN 62.1751843513
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.33
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.33
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.593928888889
+	MEAN_SERVER_HIT 0.405166111111
+	MEAN 0.999095
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.315809190235
+	MEAN_ON_PATH 0.278119698654
+	MEAN 0.593928888889
+ OVERHEAD
+	MEAN 6.94168583333
+ LATENCY
+	MEAN 62.1162229743
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.5
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.5
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.595898611111
+	MEAN_SERVER_HIT 0.403183055556
+	MEAN 0.999081666667
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.318083553469
+	MEAN_ON_PATH 0.277815057642
+	MEAN 0.595898611111
+ OVERHEAD
+	MEAN 7.03460083333
+ LATENCY
+	MEAN 61.9651098188
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.66
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.66
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.593941111111
+	MEAN_SERVER_HIT 0.4051025
+	MEAN 0.999043611111
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.3181154508
+	MEAN_ON_PATH 0.275825660311
+	MEAN 0.593941111111
+ OVERHEAD
+	MEAN 7.0730775
+ LATENCY
+	MEAN 62.3102684042
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.75
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.75
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.591354722222
+	MEAN_SERVER_HIT 0.407681111111
+	MEAN 0.999035833333
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.316598359809
+	MEAN_ON_PATH 0.274756362413
+	MEAN 0.591354722222
+ OVERHEAD
+	MEAN 7.08511138889
+ LATENCY
+	MEAN 62.6318240036
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 1.0
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 1.0
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.585941944444
+	MEAN_SERVER_HIT 0.413088888889
+	MEAN 0.999030833333
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.314779732309
+	MEAN_ON_PATH 0.271162212136
+	MEAN 0.585941944444
+ OVERHEAD
+	MEAN 7.13022944444
+ LATENCY
+	MEAN 63.2990664249
+Plotting results
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 857, in <module>
+    main()
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 854, in main
+    run(args.results, args.output)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 842, in run
+    plot_paper_graphs(resultset, plotdir)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 759, in plot_paper_graphs
+    plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 643, in plot_first_experiments
+    % (str(topology), str(strategy), str(extra_quota)), plotdir)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/results/plot.py", line 319, in plot_bar_chart
+    fig = plt.figure()
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/pyplot.py", line 535, in figure
+    **kwargs)
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/backends/backend_tkagg.py", line 84, in new_figure_manager
+    return new_figure_manager_given_figure(num, figure)
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/backends/backend_tkagg.py", line 92, in new_figure_manager_given_figure
+    window = Tk.Tk()
+  File "/home/uceeoas/.local/lib/python2.7/lib-tk/Tkinter.py", line 1815, in __init__
+    self.tk = _tkinter.create(screenName, baseName, className, interactive, wantobjects, useTk, sync, use)
+_tkinter.TclError: no display name and no $DISPLAY environment variable
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+RESULTS_FILE=${CURR_DIR}/results.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+Run experiments
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[13:22:38 2016-10-03|INFO|main] Launching orchestrator
+[13:22:38 2016-10-03|INFO|orchestration] Starting simulations: 7 experiments, 10 process(es)
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | Preparing scenario: caching probability: 0.75
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | Preparing scenario: caching probability: 0.25
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | Preparing scenario: caching probability: 0.1
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | Preparing scenario: caching probability: 0.33
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | Preparing scenario: caching probability: 0.66
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | Preparing scenario: caching probability: 0.5
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | Start simulation
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | Preparing scenario: caching probability: 1.0
+[13:22:38 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | Start simulation
+[13:33:40 2016-10-03|INFO|runner-PoolWorker-1] Experiment 1/7 | End simulation | Duration 11m 2s.
+[13:34:07 2016-10-03|INFO|runner-PoolWorker-2] Experiment 2/7 | End simulation | Duration 11m 30s.
+[13:34:16 2016-10-03|INFO|runner-PoolWorker-3] Experiment 3/7 | End simulation | Duration 11m 38s.
+[13:34:35 2016-10-03|INFO|runner-PoolWorker-5] Experiment 5/7 | End simulation | Duration 11m 57s.
+[13:34:35 2016-10-03|INFO|orchestration] SUMMARY | Completed: 4, Failed: 0, Scheduled: 3, ETA: 3m
+[13:34:42 2016-10-03|INFO|runner-PoolWorker-4] Experiment 4/7 | End simulation | Duration 12m 4s.
+[13:34:53 2016-10-03|INFO|runner-PoolWorker-6] Experiment 6/7 | End simulation | Duration 12m 15s.
+[13:35:02 2016-10-03|INFO|runner-PoolWorker-7] Experiment 7/7 | End simulation | Duration 12m 24s.
+[13:35:04 2016-10-03|INFO|orchestration] END | Planned: 7, Completed: 7, Succeeded: 7, Failed: 0
+[13:35:04 2016-10-03|INFO|main] Orchestrator finished
+[13:35:04 2016-10-03|INFO|main] Saved results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results.pickle
+
+# Plot results
+echo "Plot results"
+Plot results
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.1
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.1
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.622826666667
+	MEAN_SERVER_HIT 0.376404722222
+	MEAN 0.999231388889
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.338948686518
+	MEAN_ON_PATH 0.283877980148
+	MEAN 0.622826666667
+ OVERHEAD
+	MEAN 7.31863305556
+ LATENCY
+	MEAN 58.6113113959
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.25
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.25
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.640864166667
+	MEAN_SERVER_HIT 0.358428888889
+	MEAN 0.999293055556
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.356219593642
+	MEAN_ON_PATH 0.284644573025
+	MEAN 0.640864166667
+ OVERHEAD
+	MEAN 7.58176416667
+ LATENCY
+	MEAN 56.8376961183
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.33
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.33
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.645627777778
+	MEAN_SERVER_HIT 0.353639166667
+	MEAN 0.999266944444
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.361397305286
+	MEAN_ON_PATH 0.284230472491
+	MEAN 0.645627777778
+ OVERHEAD
+	MEAN 7.61657222222
+ LATENCY
+	MEAN 56.2334667625
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.66
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.66
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.652985555556
+	MEAN_SERVER_HIT 0.346239166667
+	MEAN 0.999224722222
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.367602335571
+	MEAN_ON_PATH 0.285383219985
+	MEAN 0.652985555556
+ OVERHEAD
+	MEAN 7.74848111111
+ LATENCY
+	MEAN 55.5779701895
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.5
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.5
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.649882777778
+	MEAN_SERVER_HIT 0.349375833333
+	MEAN 0.999258611111
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.365511498907
+	MEAN_ON_PATH 0.284371278871
+	MEAN 0.649882777778
+ OVERHEAD
+	MEAN 7.71759583333
+ LATENCY
+	MEAN 55.9016703776
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 0.75
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 0.75
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.651425833333
+	MEAN_SERVER_HIT 0.347840277778
+	MEAN 0.999266111111
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.367186401022
+	MEAN_ON_PATH 0.284239432311
+	MEAN 0.651425833333
+ OVERHEAD
+	MEAN 7.77827722222
+ LATENCY
+	MEAN 55.950573573
+PARAMETERS:
+
+ workload
+	n_contents 10000
+	name STATIONARY
+	n_warmup 360000
+	rate 1000
+	n_measured 3600000
+	alpha 0.8
+ cache_policy
+	name LRU
+ topology
+	ext_delay 5
+	source_ratio 0.1
+	name ROCKET_FUEL
+	asn 3257
+ strategy
+	extra_quota 3
+	rsn_fresh 5.0
+	name LIRA_DFIB
+	p 1.0
+ content_placement
+	name LOWEST_DEGREE
+ joint_cache_rsn_placement
+	network_cache 0.95
+	rsn_cache_ratio 64
+	network_rsn 60.8
+	name CACHE_ALL_RSN_ALL
+ warmup_strategy
+	p 0.1
+	name NDN
+ desc caching probability: 1.0
+RESULTS:
+
+ SAT_RATE
+	MEAN_CACHE_HIT 0.651716944444
+	MEAN_SERVER_HIT 0.347510555556
+	MEAN 0.9992275
+ CACHE_HIT_RATIO
+	MEAN_OFF_PATH 0.368379818239
+	MEAN_ON_PATH 0.283337126206
+	MEAN 0.651716944444
+ OVERHEAD
+	MEAN 7.81287305556
+ LATENCY
+	MEAN 55.8035946145
+Plotting results
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 857, in <module>
+    main()
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 854, in main
+    run(args.results, args.output)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 842, in run
+    plot_paper_graphs(resultset, plotdir)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 759, in plot_paper_graphs
+    plot_first_experiments(resultset, plotdir, topology, strategy, probabilities, extra_quota)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/plotresults.py", line 643, in plot_first_experiments
+    % (str(topology), str(strategy), str(extra_quota)), plotdir)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/results/plot.py", line 319, in plot_bar_chart
+    fig = plt.figure()
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/pyplot.py", line 535, in figure
+    **kwargs)
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/backends/backend_tkagg.py", line 84, in new_figure_manager
+    return new_figure_manager_given_figure(num, figure)
+  File "/home/uceeoas/.local/lib/python2.7/site-packages/matplotlib/backends/backend_tkagg.py", line 92, in new_figure_manager_given_figure
+    window = Tk.Tk()
+  File "/home/uceeoas/.local/lib/python2.7/lib-tk/Tkinter.py", line 1815, in __init__
+    self.tk = _tkinter.create(screenName, baseName, className, interactive, wantobjects, useTk, sync, use)
+_tkinter.TclError: no display name and no $DISPLAY environment variable
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+RESULTS_FILE=${CURR_DIR}/results.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+Run experiments
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[11:53:48 2016-10-12|INFO|main] Launching orchestrator
+[11:53:48 2016-10-12|INFO|orchestration] Starting simulations: 126 experiments, 13 process(es)
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-4] Experiment 4/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-4] Experiment 4/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-5] Experiment 5/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-5] Experiment 5/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-3] Experiment 3/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-3] Experiment 3/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-6] Experiment 6/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-6] Experiment 6/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-2] Experiment 2/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-2] Experiment 2/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-7] Experiment 7/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-7] Experiment 7/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-8] Experiment 8/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-8] Experiment 8/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-10] Experiment 10/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-10] Experiment 10/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-12] Experiment 12/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-12] Experiment 12/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-1] Experiment 1/126 | Preparing scenario: caching probability: 0.1
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-1] Experiment 1/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-11] Experiment 11/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-11] Experiment 11/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-13] Experiment 13/126 | Preparing scenario: caching probability: 0.33
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-13] Experiment 13/126 | Start simulation
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-9] Experiment 9/126 | Preparing scenario: caching probability: 0.25
+[11:53:49 2016-10-12|INFO|runner-PoolWorker-9] Experiment 9/126 | Start simulation
+[12:03:11 2016-10-12|ERROR|main] Received signal 15. Terminating
+[12:03:11 2016-10-12|INFO|main] Saved intermediate results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results.pickle
+[12:03:11 2016-10-12|INFO|orchestration] Orchestrator is stopping
+
+# Plot results
+echo "Plot results"
+Plot results
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+run.sh: line 30: 29092 Terminated              /home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+#RESULTS_FILE=${CURR_DIR}/results_efib_size_last.pickle
+RESULTS_FILE=${CURR_DIR}/results_efib_netcache_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_efib_zipf_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_strategies_last.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[05:58:34 2017-04-30|INFO|main] Launching orchestrator
+[05:58:34 2017-04-30|INFO|orchestration] Starting simulations: 27 experiments, 20 process(es)
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-16] Experiment 16/27 | Preparing scenario: strategy network_cache: 0.7
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-16] Experiment 16/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-14] Experiment 14/27 | Preparing scenario: strategy network_cache: 0.5
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-14] Experiment 14/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-7] Experiment 7/27 | Preparing scenario: strategy network_cache: 0.7
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-7] Experiment 7/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-8] Experiment 8/27 | Preparing scenario: strategy network_cache: 0.8
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-8] Experiment 8/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-3] Experiment 3/27 | Preparing scenario: strategy network_cache: 0.3
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-3] Experiment 3/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-11] Experiment 11/27 | Preparing scenario: strategy network_cache: 0.2
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-11] Experiment 11/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-1] Experiment 1/27 | Preparing scenario: strategy network_cache: 0.1
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-1] Experiment 1/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-2] Experiment 2/27 | Preparing scenario: strategy network_cache: 0.2
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-2] Experiment 2/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-4] Experiment 4/27 | Preparing scenario: strategy network_cache: 0.4
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-4] Experiment 4/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-9] Experiment 9/27 | Preparing scenario: strategy network_cache: 0.9
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-9] Experiment 9/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-6] Experiment 6/27 | Preparing scenario: strategy network_cache: 0.6
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-6] Experiment 6/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-5] Experiment 5/27 | Preparing scenario: strategy network_cache: 0.5
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-5] Experiment 5/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-18] Experiment 18/27 | Preparing scenario: strategy network_cache: 0.9
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-18] Experiment 18/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-19] Experiment 19/27 | Preparing scenario: strategy network_cache: 0.1
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-19] Experiment 19/27 | Start simulation
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-17] Experiment 17/27 | Preparing scenario: strategy network_cache: 0.8
+[05:58:34 2017-04-30|INFO|runner-PoolWorker-17] Experiment 17/27 | Start simulation
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-12] Experiment 12/27 | Preparing scenario: strategy network_cache: 0.3
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-12] Experiment 12/27 | Start simulation
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-10] Experiment 10/27 | Preparing scenario: strategy network_cache: 0.1
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-10] Experiment 10/27 | Start simulation
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-15] Experiment 15/27 | Preparing scenario: strategy network_cache: 0.6
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-15] Experiment 15/27 | Start simulation
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-13] Experiment 13/27 | Preparing scenario: strategy network_cache: 0.4
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-13] Experiment 13/27 | Start simulation
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-20] Experiment 20/27 | Preparing scenario: strategy network_cache: 0.2
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-20] Experiment 20/27 | Start simulation
+[05:58:35 2017-04-30|ERROR|runner-PoolWorker-19] Experiment 19/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-19] Experiment 21/27 | Preparing scenario: strategy network_cache: 0.3
+[05:58:35 2017-04-30|INFO|runner-PoolWorker-19] Experiment 21/27 | Start simulation
+[05:58:36 2017-04-30|ERROR|runner-PoolWorker-20] Experiment 20/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:36 2017-04-30|INFO|runner-PoolWorker-20] Experiment 22/27 | Preparing scenario: strategy network_cache: 0.4
+[05:58:36 2017-04-30|INFO|runner-PoolWorker-20] Experiment 22/27 | Start simulation
+[05:58:36 2017-04-30|ERROR|runner-PoolWorker-19] Experiment 21/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:37 2017-04-30|ERROR|runner-PoolWorker-20] Experiment 22/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:37 2017-04-30|INFO|runner-PoolWorker-19] Experiment 23/27 | Preparing scenario: strategy network_cache: 0.5
+[05:58:37 2017-04-30|INFO|runner-PoolWorker-19] Experiment 23/27 | Start simulation
+[05:58:37 2017-04-30|INFO|runner-PoolWorker-20] Experiment 24/27 | Preparing scenario: strategy network_cache: 0.6
+[05:58:37 2017-04-30|INFO|runner-PoolWorker-20] Experiment 24/27 | Start simulation
+[05:58:38 2017-04-30|ERROR|runner-PoolWorker-19] Experiment 23/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:38 2017-04-30|ERROR|runner-PoolWorker-20] Experiment 24/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:38 2017-04-30|INFO|runner-PoolWorker-19] Experiment 25/27 | Preparing scenario: strategy network_cache: 0.7
+[05:58:38 2017-04-30|INFO|runner-PoolWorker-19] Experiment 25/27 | Start simulation
+[05:58:38 2017-04-30|INFO|runner-PoolWorker-20] Experiment 26/27 | Preparing scenario: strategy network_cache: 0.8
+[05:58:38 2017-04-30|INFO|runner-PoolWorker-20] Experiment 26/27 | Start simulation
+[05:58:39 2017-04-30|ERROR|runner-PoolWorker-19] Experiment 25/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:39 2017-04-30|ERROR|runner-PoolWorker-20] Experiment 26/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[05:58:39 2017-04-30|INFO|runner-PoolWorker-19] Experiment 27/27 | Preparing scenario: strategy network_cache: 0.9
+[05:58:39 2017-04-30|INFO|runner-PoolWorker-19] Experiment 27/27 | Start simulation
+[05:58:40 2017-04-30|ERROR|runner-PoolWorker-19] Experiment 27/27 | Failed | TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+Traceback (most recent call last):
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/orchestration.py", line 301, in run_scenario
+    results = exec_experiment(topology, workload, netconf, strategy, cache_policy, collectors, warmup_strategy)
+  File "/home/uceeoas/LanmanExtension/icarus-lanman/icarus/execution/engine.py", line 59, in exec_experiment
+    strategy_inst = STRATEGY[strategy_name](view, controller, **strategy_args)
+TypeError: __init__() got an unexpected keyword argument 'extra_quota'
+
+[08:40:38 2017-04-30|INFO|runner-PoolWorker-9] Experiment 9/27 | End simulation | Duration 2h 42m 4s.
+[08:42:54 2017-04-30|INFO|runner-PoolWorker-1] Experiment 1/27 | End simulation | Duration 2h 44m 20s.
+[08:44:02 2017-04-30|INFO|runner-PoolWorker-7] Experiment 7/27 | End simulation | Duration 2h 45m 28s.
+[08:44:31 2017-04-30|INFO|runner-PoolWorker-8] Experiment 8/27 | End simulation | Duration 2h 45m 57s.
+[08:44:31 2017-04-30|INFO|orchestration] SUMMARY | Completed: 4, Failed: 9, Scheduled: 14, ETA: 1h 55m
+[08:45:52 2017-04-30|INFO|runner-PoolWorker-2] Experiment 2/27 | End simulation | Duration 2h 47m 18s.
+[08:47:09 2017-04-30|INFO|runner-PoolWorker-10] Experiment 10/27 | End simulation | Duration 2h 48m 35s.
+[08:47:30 2017-04-30|INFO|runner-PoolWorker-5] Experiment 5/27 | End simulation | Duration 2h 48m 56s.
+[08:47:39 2017-04-30|INFO|runner-PoolWorker-4] Experiment 4/27 | End simulation | Duration 2h 49m 5s.
+[08:47:39 2017-04-30|INFO|orchestration] SUMMARY | Completed: 8, Failed: 9, Scheduled: 10, ETA: 1h 23m
+[08:47:53 2017-04-30|INFO|runner-PoolWorker-6] Experiment 6/27 | End simulation | Duration 2h 49m 19s.
+[08:49:22 2017-04-30|INFO|runner-PoolWorker-3] Experiment 3/27 | End simulation | Duration 2h 50m 48s.
+[08:56:48 2017-04-30|INFO|runner-PoolWorker-11] Experiment 11/27 | End simulation | Duration 2h 58m 13s.
+[09:03:10 2017-04-30|INFO|runner-PoolWorker-12] Experiment 12/27 | End simulation | Duration 3h 4m 36s.
+[09:03:10 2017-04-30|INFO|orchestration] SUMMARY | Completed: 12, Failed: 9, Scheduled: 6, ETA: 50m
+[09:11:01 2017-04-30|INFO|runner-PoolWorker-13] Experiment 13/27 | End simulation | Duration 3h 12m 27s.
+[09:17:38 2017-04-30|INFO|runner-PoolWorker-14] Experiment 14/27 | End simulation | Duration 3h 19m 4s.
+[09:21:34 2017-04-30|INFO|runner-PoolWorker-15] Experiment 15/27 | End simulation | Duration 3h 23m.
+[09:23:58 2017-04-30|INFO|runner-PoolWorker-16] Experiment 16/27 | End simulation | Duration 3h 25m 24s.
+[09:23:58 2017-04-30|INFO|orchestration] SUMMARY | Completed: 16, Failed: 9, Scheduled: 2, ETA: 17m
+[09:28:05 2017-04-30|INFO|runner-PoolWorker-17] Experiment 17/27 | End simulation | Duration 3h 29m 30s.
+[09:30:56 2017-04-30|INFO|runner-PoolWorker-18] Experiment 18/27 | End simulation | Duration 3h 32m 22s.
+[09:30:57 2017-04-30|INFO|orchestration] END | Planned: 27, Completed: 27, Succeeded: 18, Failed: 9
+[09:30:57 2017-04-30|INFO|main] Orchestrator finished
+[09:30:57 2017-04-30|INFO|main] Saved results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results_efib_netcache_last.pickle
+
+# Plot results
+echo "Plot results"
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
+
+# Directory where this script is located
+CURR_DIR=`pwd`
+pwd
+
+# Icarus main folder
+ICARUS_DIR=${CURR_DIR}/../..
+
+# Dir where plots will be saved 
+PLOTS_DIR=${CURR_DIR}/plots
+
+# Config file
+CONFIG_FILE=${CURR_DIR}/config.py
+
+# FIle where results will be saved
+#RESULTS_FILE=${CURR_DIR}/results_efib_size_last.pickle
+RESULTS_FILE=${CURR_DIR}/results_efib_netcache_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_efib_zipf_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_strategies_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_efib_additive_last.pickle
+#RESULTS_FILE=${CURR_DIR}/results_nrr_netcache.pickle
+
+# Add Icarus code to PYTHONPATH
+export PYTHONPATH=${ICARUS_DIR}:$PYTHONPATH
+
+# Run experiments
+echo "Run experiments"
+/home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+[01:10:54 2017-05-05|INFO|main] Launching orchestrator
+[01:10:54 2017-05-05|INFO|orchestration] Starting simulations: 18 experiments, 20 process(es)
+[01:10:55 2017-05-05|INFO|runner-PoolWorker-18] Experiment 15/18 | Preparing scenario: strategy network_cache: 0.6
+[01:10:55 2017-05-05|INFO|runner-PoolWorker-18] Experiment 15/18 | Start simulation
+[01:10:55 2017-05-05|INFO|runner-PoolWorker-15] Experiment 18/18 | Preparing scenario: strategy network_cache: 0.9
+[01:10:55 2017-05-05|INFO|runner-PoolWorker-15] Experiment 18/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-13] Experiment 11/18 | Preparing scenario: strategy network_cache: 0.2
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-13] Experiment 11/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-14] Experiment 13/18 | Preparing scenario: strategy network_cache: 0.4
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-14] Experiment 13/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-9] Experiment 14/18 | Preparing scenario: strategy network_cache: 0.5
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-9] Experiment 14/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-3] Experiment 5/18 | Preparing scenario: strategy network_cache: 0.5
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-3] Experiment 5/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-11] Experiment 17/18 | Preparing scenario: strategy network_cache: 0.8
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-11] Experiment 17/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-16] Experiment 12/18 | Preparing scenario: strategy network_cache: 0.3
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-16] Experiment 12/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-1] Experiment 4/18 | Preparing scenario: strategy network_cache: 0.4
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-1] Experiment 4/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-10] Experiment 3/18 | Preparing scenario: strategy network_cache: 0.3
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-10] Experiment 3/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-7] Experiment 6/18 | Preparing scenario: strategy network_cache: 0.6
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-7] Experiment 6/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-8] Experiment 9/18 | Preparing scenario: strategy network_cache: 0.9
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-8] Experiment 9/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-2] Experiment 7/18 | Preparing scenario: strategy network_cache: 0.7
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-2] Experiment 7/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-6] Experiment 2/18 | Preparing scenario: strategy network_cache: 0.2
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-6] Experiment 2/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-4] Experiment 8/18 | Preparing scenario: strategy network_cache: 0.8
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-4] Experiment 8/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-12] Experiment 10/18 | Preparing scenario: strategy network_cache: 0.1
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-12] Experiment 10/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-5] Experiment 1/18 | Preparing scenario: strategy network_cache: 0.1
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-5] Experiment 1/18 | Start simulation
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-17] Experiment 16/18 | Preparing scenario: strategy network_cache: 0.7
+[01:10:56 2017-05-05|INFO|runner-PoolWorker-17] Experiment 16/18 | Start simulation
+[11:51:34 2017-05-05|ERROR|main] Received signal 15. Terminating
+[11:51:34 2017-05-05|INFO|main] Saved intermediate results to file /home/uceeoas/LanmanExtension/icarus-lanman/examples/lanman/results_efib_netcache_last.pickle
+[11:51:34 2017-05-05|INFO|orchestration] Orchestrator is stopping
+run.sh: line 31: 99708 Killed                  /home/uceeoas/.local/bin/python ${ICARUS_DIR}/icarus.py --results ${RESULTS_FILE} ${CONFIG_FILE}
+
+# Plot results
+echo "Plot results"
+/home/uceeoas/.local/bin/python ${CURR_DIR}/plotresults.py --results ${RESULTS_FILE} --output ${PLOTS_DIR}
