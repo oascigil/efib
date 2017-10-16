@@ -2936,8 +2936,6 @@ class Tfib_sc(Strategy):
         
         return rsn_entries[0:fan_out]
 
-
-    
     # T-FIB-SC
     def invalidate_tr(self, trail, content=None):
         """invalidate trail of DFIB
@@ -2969,6 +2967,7 @@ class Tfib_sc(Strategy):
         while rsn_hop is not None:
             prev_hop = curr_hop
             curr_hop = rsn_hop
+            self.controller.forward_off_path_request_hop(prev_hop, curr_hop)
             if curr_hop in trail:
             # loop in the explored off-path trail
                 #print "Loop in the trail, calling invalidate " + repr(trail) + " / " + repr(rsn_hop)
@@ -3061,6 +3060,7 @@ class Tfib_sc(Strategy):
             v = path[hop]
             on_path_trail.append(v)
             # self.controller.forward_request_hop(u, v)
+            self.controller.forward_off_path_request_hop(u, v)
             # Return if there is cache hit at v
             if self.view.has_cache(v):
                 if self.controller.get_content(v):
@@ -3642,6 +3642,7 @@ class Tfib_dc(Strategy):
         while rsn_hop is not None:
             prev_hop = curr_hop
             curr_hop = rsn_hop
+            self.controller.forward_off_path_request_hop(prev_hop, curr_hop)
             if curr_hop in trail:
             # loop in the explored off-path trail
                 #print "Loop in the trail, calling invalidate " + repr(trail) + " / " + repr(rsn_hop)
@@ -3751,6 +3752,7 @@ class Tfib_dc(Strategy):
         for hop in range(1, len(path)):
             u = path[hop - 1]
             v = path[hop]
+            self.controller.forward_off_path_request_hop(u, v)
             on_path_trail.append(v)
             # self.controller.forward_request_hop(u, v)
             # Return if there is cache hit at v

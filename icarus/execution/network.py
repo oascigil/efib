@@ -562,6 +562,19 @@ class NetworkController(object):
         if self.collector is not None and self.session['log']:
             self.collector.request_hop(u, v, main_path)
     
+    def forward_off_path_request_hop(self, u, v, main_path=True):
+        """Forward a request over link  u -> v.
+                
+        Parameters
+        ----------
+        u : any hashable type
+            Origin node
+        v : any hashable type
+            Destination node
+        """
+        if self.collector is not None and self.session['log']:
+            self.collector.off_path_request_hop(u, v, main_path)
+    
     def forward_content_hop(self, u, v, main_path=True):
         """Forward a content over link  u -> v.
                 

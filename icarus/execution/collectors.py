@@ -96,6 +96,23 @@ class DataCollector(object):
             The server node which served the content
         """
         pass
+
+    def off_path_request_hop(self, u, v, main_path=True):
+        """Reports that a request has traversed the off-path link *(u, v)*
+        
+        Parameters
+        ----------
+        u : any hashable type
+            Origin node
+        v : any hashable type
+            Destination node
+        main_path : bool
+            If True, indicates that link link is on the main path that will
+            lead to hit a content. It is normally used to calculate latency
+            correctly in multicast cases.
+        """
+        pass
+        
     
     def request_hop(self, u, v, main_path=True):
         """Reports that a request has traversed the link *(u, v)*
@@ -165,7 +182,7 @@ class CollectorProxy(DataCollector):
     """
     
     EVENTS = ('start_session', 'end_session', 'cache_hit', 'cache_miss', 'server_hit',
-              'request_hop', 'content_hop', 'offpath_trail', 'results')
+              'request_hop', 'off_path_request_hop', 'content_hop', 'offpath_trail', 'results')
     
     def __init__(self, view, collectors):
         """Constructor
@@ -206,6 +223,11 @@ class CollectorProxy(DataCollector):
         for c in self.collectors['request_hop']:
             c.request_hop(u, v, main_path)
     
+    @inheritdoc(DataCollector)
+    def off_path_request_hop(self, u, v, main_path=True):
+        for c in self.collectors['off_path_request_hop']:
+            c.off_path_request_hop(u, v, main_path)
+
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
         for c in self.collectors['content_hop']:
@@ -366,6 +388,7 @@ class OverheadCollector(DataCollector):
         self.view = view
         self.num_data = 0.0
         self.sess_count = 0
+        self.data_hops = 0.0
         self.interest_hops = 0.0
         self.success_indicator = False
         self.num_successfull_session = 0.0
@@ -378,9 +401,9 @@ class OverheadCollector(DataCollector):
         self.quota_used_failure = 0.0 # the number of quota used in failed trail discoveries
         self.quota_used_success = 0.0 # the number of quota used in successful trail discoveries
 
-    #@inheritdoc(DataCollector)
-    #def content_hop(self, u, v, main_path=True):
-        #self.num_data += 1
+    @inheritdoc(DataCollector)
+    def content_hop(self, u, v, main_path=True):
+        self.data_hops += 1
 
     @inheritdoc(DataCollector)
     def start_session(self, timestamp, receiver, content):
@@ -393,8 +416,12 @@ class OverheadCollector(DataCollector):
         if self.session_trials > 0:
             self.num_trial_sessions += 1
 
+    #@inheritdoc(DataCollector)
+    #def request_hop(self, u, v, main_path=True):
+    #    self.interest_hops += 1
+    
     @inheritdoc(DataCollector)
-    def request_hop(self, u, v, main_path=True):
+    def off_path_request_hop(self, u, v, main_path=True):
         self.interest_hops += 1
 
     @inheritdoc(DataCollector)
@@ -427,7 +454,8 @@ class OverheadCollector(DataCollector):
     @inheritdoc(DataCollector)
     def results(self):
         results = Tree({'MEAN': self.num_data/self.num_successfull_session})
-        results['INTEREST_HOPS'] = self.interest_hops/self.num_successfull_session
+        results['INTEREST_HOPS'] = self.interest_hops/self.sess_count
+        results['DATA_HOPS'] = self.data_hops/self.sess_count
         results['QUOTA_USED_SUCCESS'] = 0.0
         results['QUOTA_USED_FAILURE'] = 0.0
         results['NUM_SUCCESS_FIRST_TIME'] = 0.0
@@ -490,12 +518,16 @@ class LatencyCollector(DataCollector):
     @inheritdoc(DataCollector)
     def cache_hit(self, node):
         self.hit_indicator = True
+    
+    @inheritdoc(DataCollector)
+    def server_hit(self, node):
+        self.hit_indicator = True
 
     @inheritdoc(DataCollector)
     def content_hop(self, u, v, main_path=True):
         if not self.content_recvd:
             if u == self.source:
-                self.sess_latency += 55
+                self.sess_latency += self.server_latency
             else:
                 self.sess_latency += self.view.link_delay(u, v)
         if v == self.receiver:
@@ -508,6 +540,11 @@ class LatencyCollector(DataCollector):
         if self.cdf:
             self.latency_data.append(self.sess_latency)
         self.latency += self.sess_latency
+        if self.hit_indicator is False:
+            path = self.view.shortest_path(self.receiver, self.source)
+            self.latency += self.view.path_delay(path)*2 + self.server_latency
+            self.hit_indicator = True
+
     
     @inheritdoc(DataCollector)
     def results(self):
